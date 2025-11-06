@@ -28,6 +28,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($resultado) {
         if (password_verify($contraseña, $resultado['contraseña'])) {
+            // Incluir la funcionalidad de envío de correo y enviar antes de redirigir
+            include 'correo.php';
+
+            $asunto = 'Bienvenido a Mi Sitio';
+            $cuerpo = '<p>Hola ' . htmlspecialchars($usuario) . ',</p>'
+                    . '<p>Gracias por registrarte en nuestro sitio. Tu cuenta ha sido creada correctamente.</p>'
+                    . '<p>Tu usuario es: <strong>' . htmlspecialchars($usuario) . '</strong></p>';
+
+            // Intentar enviar el correo y registrar el resultado
+            try {
+                $resultadoCorreo = enviarCorreo($correo, $usuario, $asunto, $cuerpo);
+                if (!(isset($resultadoCorreo['exito']) && $resultadoCorreo['exito'])) {
+                    error_log('Fallo envío correo de bienvenida: ' . json_encode($resultadoCorreo));
+                }
+            } catch (Throwable $e) {
+                error_log('Excepción al enviar correo de bienvenida: ' . $e->getMessage());
+            }
+
+            // Redirigir al usuario después de intentar enviar el correo
             header("Location: index.html");
             exit;
         }
