@@ -7,7 +7,8 @@
 </head>
 <body>
   <?php
-include 'conexion_bd.php'; // 👈 conexión PDO
+include 'conexion_bd.php'; // conexión PDO
+session_start();
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -22,14 +23,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($fila) { // Si existe el usuario
         if (password_verify($contraseña, $fila['contraseña'])) {
-            echo "✅ Acceso concedido. Bienvenido, $usuario!";
-            header("Location: index.html"); // 👈 corregido (era 'Locate')
-            exit; // siempre después de header()
+            // Obtener todos los datos necesarios del usuario
+            $sql = "SELECT id, usuario, email FROM usuarios WHERE usuario = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$usuario]);
+            $usuario_data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Crear variables de sesión
+            $_SESSION['user_id'] = $usuario_data['id'];
+            $_SESSION['usuario'] = $usuario_data['usuario'];
+            $_SESSION['email'] = $usuario_data['email'];
+
+            header("Location: index.html");
+            exit;
         } else {
-            echo "❌ Contraseña incorrecta.";
+            echo "Contraseña incorrecta.";
         }
     } else {
-        echo "❌ Usuario no encontrado. Vuelve a intentarlo o regístrate.";
+        echo "Usuario no encontrado. Vuelve a intentarlo o regístrate.";
     }
 }
 
