@@ -3,11 +3,11 @@ include 'conexion_bd.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require __DIR__ . '/vendor/autoload.php'; // ✅ Carga automática de PHPMailer
+require __DIR__ . '/vendor/autoload.php'; //  Carga automática de PHPMailer
 // Configuración del correo
 define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_USER', 'Tristalia11@gmail.com');  // Cambiar por tu correo
-define('SMTP_PASS', 'jxbs tigv qnuo ckpn');    // Cambiar por tu contraseña de aplicación
+define('SMTP_USER', 'Tristalia11@gmail.com'); 
+define('SMTP_PASS', 'jxbs tigv qnuo ckpn');    
 define('SMTP_FROM_NAME', 'Miniportal Soporte');
 
 

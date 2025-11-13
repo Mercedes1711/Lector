@@ -1,59 +1,85 @@
+<?php
+session_start();
+include 'conexion_bd.php'; // conexión PDO
+
+$error = '';
+
+if (!empty($_SESSION['usuario'])) {
+    header('Location: perfil.php');
+    exit;
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $usuario = trim($_POST['usuario'] ?? '');
+    $contraseña = $_POST['contraseña'] ?? '';
+
+    if ($usuario === '' || $contraseña === '') {
+        $error = 'Rellena todos los campos.';
+    } else {
+        $sql = "SELECT id, usuario, contraseña, email FROM usuarios WHERE usuario = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$usuario]);
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($fila && password_verify($contraseña, $fila['contraseña'])) {
+            $_SESSION['user_id'] = $fila['id'];
+            $_SESSION['usuario'] = $fila['usuario'];
+            $_SESSION['email'] = $fila['email'];
+            header("Location: index.php");
+            exit;
+        } else {
+            $error = 'Usuario o contraseña incorrectos.';
+        }
+    }
+}
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login</title>
+    <link rel="stylesheet" href="manga_verso.css">
+    <title>Login - Manga_verso</title>
 </head>
 <body>
-  <?php
-include 'conexion_bd.php'; // conexión PDO
-session_start();
+<header>
+    <div>
+        <h1>Manga_verso</h1>
+        <p>Tu portal de manga</p>
+    </div>
+    <div></div>
+</header>
 
+<main class="login-container">
+    <div class="login-card">
+        <h2>Iniciar sesión</h2>
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $usuario = $_POST['usuario'];
-    $contraseña = $_POST['contraseña'];
+        <?php if ($error): ?>
+            <div class="form-error"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
 
-    // Buscar la contraseña del usuario en la base de datos
-    $sql = "SELECT contraseña FROM usuarios WHERE usuario = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([$usuario]);
-    $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" class="login-form" novalidate>
+            <div class="form-group">
+                <label for="usuario">Usuario</label>
+                <input id="usuario" name="usuario" type="text" required autocomplete="username" value="<?php echo isset($usuario) ? htmlspecialchars($usuario) : ''; ?>">
+            </div>
 
-    if ($fila) { // Si existe el usuario
-        if (password_verify($contraseña, $fila['contraseña'])) {
-            // Obtener todos los datos necesarios del usuario
-            $sql = "SELECT id, usuario, email FROM usuarios WHERE usuario = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$usuario]);
-            $usuario_data = $stmt->fetch(PDO::FETCH_ASSOC);
+            <div class="form-group">
+                <label for="contraseña">Contraseña</label>
+                <input id="contraseña" name="contraseña" type="password" required autocomplete="current-password">
+            </div>
 
-            // Crear variables de sesión
-            $_SESSION['user_id'] = $usuario_data['id'];
-            $_SESSION['usuario'] = $usuario_data['usuario'];
-            $_SESSION['email'] = $usuario_data['email'];
+            <button type="submit" class="login-btn">Entrar</button>
 
-            header("Location: index.html");
-            exit;
-        } else {
-            echo "Contraseña incorrecta.";
-        }
-    } else {
-        echo "Usuario no encontrado. Vuelve a intentarlo o regístrate.";
-    }
-}
+            <div class="form-footer">
+                <a class="small-link" href="sing_in.php">¿No tienes cuenta? Regístrate</a>
+            </div>
+        </form>
+    </div>
+</main>
 
-  
-  ?>
-  <form action= <?php echo htmlspecialchars($_SERVER['PHP_SELF']);?> method= "POST">
-    <label>usuario</label>
-    <input name= "usuario" type="text">
-    <label>contraseña</label>
-    <input name= "contraseña" type="password">
-    <label> 
-    <input type="submit">
-</form>
-<p> No tienes cuenta <a href="sing_in.php">Registrate</a> </p>
+<footer>
+    <p>&copy; 2025 Manga_verso</p>
+</footer>
 </body>
 </html>

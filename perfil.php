@@ -31,22 +31,49 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil</title>
+    <link rel="stylesheet" href="manga_verso.css">
+    <title>Mi Perfil - Manga_verso</title>
 </head>
 <body>
-    <h1>Mi Perfil</h1>
+    <header>
+        <div>
+            <h1>Manga_verso</h1>
+            <p>Tu portal de manga</p>
+        </div>
+        <div class="auth-logged">
+            <a class="user-link"><?php echo htmlspecialchars($usuario['usuario']); ?></a>
+            <a class="logout-btn" href="logout.php">Cerrar sesión</a>
+        </div>
+    </header>
 
-    <?php if (isset($error)): ?>
-        <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
-    <?php endif; ?>
+    <main class="profile-container">
+        <div class="profile-card">
+            <h2>Mi Perfil</h2>
 
-    <div>
-        <p>Usuario: <?php echo htmlspecialchars($usuario['usuario']); ?></p>
-        <p>Email: <?php echo htmlspecialchars($usuario['email']); ?></p>
-    </div>
+            <?php if (isset($error)): ?>
+                <div class="form-error"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
 
-    <p>
-        <a href="index.html">Volver al Inicio</a>
-    </p>
+            <div class="profile-info">
+                <div class="info-group">
+                    <label>Usuario</label>
+                    <p><?php echo htmlspecialchars($usuario['usuario']); ?></p>
+                </div>
+
+                <div class="info-group">
+                    <label>Correo</label>
+                    <p><?php echo htmlspecialchars($usuario['email']); ?></p>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <a class="btn-primary" href="index.php">Volver al Inicio</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Manga_verso</p>
+    </footer>
 </body>
 </html>

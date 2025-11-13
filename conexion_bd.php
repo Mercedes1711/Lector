@@ -2,7 +2,7 @@
 
 // Datos de conexión
 $host = "localhost";     // Servidor (localhost si usas XAMPP)
-$dbname = "usuarios";    // Nombre de tu base de datos
+$dbname = "Manga_verso";    // Nombre de tu base de datos
 $username = "root";      // Usuario de MySQL (por defecto en XAMPP)
 $password = "";          // Contraseña (vacía por defecto)
 
