@@ -16,6 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($usuario === '' || $contraseña === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
         $error = 'Rellena todos los campos correctamente.';
+    } else if (strlen($contraseña) < 8) {
+        $error = 'La contraseña debe tener al menos 8 caracteres.';
+    } else if (!preg_match('/[0-9]/', $contraseña)) {
+        $error = 'La contraseña debe incluir al menos un número.';
     } else {
         // Comprobar si el usuario ya existe
         $sql = "SELECT id FROM usuarios WHERE usuario = ? OR email = ?";
@@ -97,7 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="contraseña">Contraseña</label>
-                <input id="contraseña" name="contraseña" type="password" required autocomplete="new-password">
+                <input id="contraseña" name="contraseña" type="password" required autocomplete="new-password" placeholder="Mínimo 8 caracteres y 1 número">
+                <small style="color: #999; font-size: 12px;">Mínimo 8 caracteres e incluir al menos 1 número</small>
             </div>
 
             <button type="submit" class="login-btn">Registrarse</button>
