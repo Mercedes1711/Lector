@@ -8,7 +8,7 @@ require __DIR__ . '/vendor/autoload.php'; //  Carga automática de PHPMailer
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_USER', 'Tristalia11@gmail.com'); 
 define('SMTP_PASS', 'jxbs tigv qnuo ckpn');    
-define('SMTP_FROM_NAME', 'Miniportal Soporte');
+define('SMTP_FROM_NAME', 'Manga_verso Soporte');
 
 
 function enviarCorreo($destinatario, $nombre, $asunto, $cuerpoHTML) {
