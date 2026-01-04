@@ -4,6 +4,10 @@ include 'conexion_bd.php'; // conexión PDO
 
 $error = '';
 
+if (!isset($_SESSION['login_fails'])) {
+    $_SESSION['login_fails'] = 0;
+}
+
 if (!empty($_SESSION['usuario'])) {
     header('Location: perfil.php');
     exit;
@@ -25,9 +29,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $fila['id'];
             $_SESSION['usuario'] = $fila['usuario'];
             $_SESSION['email'] = $fila['email'];
+
+            $_SESSION['login_fails'] = 0;
+
             header("Location: index.php");
             exit;
         } else {
+
+            $_SESSION['login_fails']++;
+
             $error = 'Usuario o contraseña incorrectos.';
         }
     }
@@ -70,6 +80,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <button type="submit" class="login-btn">Entrar</button>
+
+            <?php if ($_SESSION['login_fails'] >= 3): ?>
+                <div class="form-footer">
+                    <a class="small-link" href="forgot_password.php">
+                        ¿Has olvidado tu contraseña?
+                    </a>
+                </div>
+            <?php endif; ?>
 
             <div class="form-footer">
                 <a class="small-link" href="sing_in.php">¿No tienes cuenta? Regístrate</a>
