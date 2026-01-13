@@ -1,0 +1,33 @@
+<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>380</x><y>0</y><w>210</w><h>190</h></coordinates><panel_attributes>usuario
+
+--
+-int id  Usuario
+-string nombre
+-string email
+-string contraseña
+--
++registrarse()
++iniciar sesión()
++agregar manga()
++buscar manga()
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>490</x><y>190</y><w>30</w><h>90</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;70;10;10;10;30</additional_attributes></element><element><id>UMLClass</id><coordinates><x>440</x><y>270</y><w>100</w><h>30</h></coordinates><panel_attributes>tiene</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>450</x><y>200</y><w>30</w><h>30</h></coordinates><panel_attributes>1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>550</x><y>270</y><w>40</w><h>30</h></coordinates><panel_attributes>1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>400</x><y>310</y><w>210</w><h>110</h></coordinates><panel_attributes>biblioteca
+--
+-int id biblioteca
+-string nombre
+--
++añadir manga
++eliminar manga
++listar amangas
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>490</x><y>430</y><w>30</w><h>110</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;90;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>450</x><y>470</y><w>100</w><h>30</h></coordinates><panel_attributes>contiene</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>450</x><y>430</y><w>40</w><h>30</h></coordinates><panel_attributes>1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>560</x><y>490</y><w>40</w><h>30</h></coordinates><panel_attributes>0</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>400</x><y>530</y><w>210</w><h>190</h></coordinates><panel_attributes>manga
+
+--
+-int id Manga
+-string titulo
+-string autor
+-string genero
+-int capitulos
+-string portada
+--
++obtener detalles()
++leer capitulos ()
+</panel_attributes><additional_attributes></additional_attributes></element></diagram>
