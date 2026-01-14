@@ -50,6 +50,13 @@ if (!$manga) {
 <main>
 <h1>Capítulos de <?= htmlspecialchars($manga['titulo']); ?></h1>
 
+<?php if (isset($_SESSION['error'])): ?>
+    <div style="color: red; margin-bottom: 20px; border: 1px solid red; padding: 10px; background-color: #ffe6e6;">
+        <?= htmlspecialchars($_SESSION['error']); ?>
+    </div>
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
+
 <!-- Formulario para subir capítulo -->
 <form action="subir_capitulo.php" method="POST" enctype="multipart/form-data" style="margin-bottom:30px;">
     <input type="hidden" name="manga_id" value="<?= $manga_id; ?>">

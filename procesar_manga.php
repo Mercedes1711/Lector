@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria_id = !empty($_POST['categoria_id']) ? (int)$_POST['categoria_id'] : null;
 
     if ($titulo === '' || $descripcion === '' || !isset($_FILES['portada'])) {
-        die("Datos incompletos. Rellena todos los campos.");
+        $_SESSION['error'] = "Datos incompletos. Rellena todos los campos.";
+        header("Location: subirManga.php");
+        exit;
     }
 
     // Carpeta para guardar portadas
@@ -26,13 +28,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $portada = $_FILES['portada'];
     $ext = strtolower(pathinfo($portada['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, ['jpg','jpeg','png'])) die("Solo JPG/PNG permitidos");
+    if (!in_array($ext, ['jpg','jpeg','png'])) {
+        $_SESSION['error'] = "Solo JPG/PNG permitidos para la portada.";
+        header("Location: subirManga.php");
+        exit;
+    }
 
     $nombrePortada = uniqid("portada_") . "." . $ext;
     $rutaPortada = $carpetaPortada . $nombrePortada;
 
     if (!move_uploaded_file($portada['tmp_name'], $rutaPortada)) {
-        die("Error al subir la portada.");
+        $_SESSION['error'] = "Error al subir la portada.";
+        header("Location: subirManga.php");
+        exit;
     }
 
     // Insertar en la base de datos

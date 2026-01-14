@@ -21,7 +21,9 @@ $titulo = trim($_POST['titulo'] ?? '');
 $archivo = $_FILES['archivo'] ?? null;
 
 if ($manga_id <= 0 || $titulo === '' || !$archivo) {
-    die("Datos incompletos. Asegúrate de completar todos los campos.");
+    $_SESSION['error'] = "Datos incompletos. Asegúrate de completar todos los campos.";
+    header("Location: capitulos.php?manga=$manga_id");
+    exit;
 }
 
 // Verificar que el manga pertenece al usuario logueado
@@ -30,7 +32,9 @@ $stmt->execute([$manga_id, $usuario_id]);
 $manga = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$manga) {
-    die("No tienes permiso para subir capítulos a este manga.");
+    $_SESSION['error'] = "No tienes permiso para subir capítulos a este manga.";
+    header("Location: capitulos.php?manga=$manga_id");
+    exit;
 }
 
 // Carpeta para almacenar capítulos
@@ -42,7 +46,9 @@ if (!is_dir($carpeta)) {
 // Validar archivo
 $ext = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
 if (!in_array($ext, ['pdf', 'zip'])) {
-    die("Solo archivos PDF o ZIP están permitidos.");
+    $_SESSION['error'] = "Solo archivos PDF o ZIP están permitidos.";
+    header("Location: capitulos.php?manga=$manga_id");
+    exit;
 }
 
 // Nombre único
@@ -51,7 +57,9 @@ $rutaArchivo = $carpeta . $nombreArchivo;
 
 // Subir archivo
 if (!move_uploaded_file($archivo['tmp_name'], $rutaArchivo)) {
-    die("Error al subir el archivo. Verifica permisos en la carpeta.");
+    $_SESSION['error'] = "Error al subir el archivo. Verifica permisos en la carpeta.";
+    header("Location: capitulos.php?manga=$manga_id");
+    exit;
 }
 
 // Insertar en base de datos

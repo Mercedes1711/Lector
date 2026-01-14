@@ -30,6 +30,13 @@ if (empty($_SESSION['usuario'])) {
 <main>
     <h1>Subir nuevo manga</h1>
 
+    <?php if (isset($_SESSION['error'])): ?>
+        <div style="color: red; margin-bottom: 20px; border: 1px solid red; padding: 10px; background-color: #ffe6e6;">
+            <?= htmlspecialchars($_SESSION['error']); ?>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
     <div class="form-container">
         <form action="procesar_manga.php" method="POST" enctype="multipart/form-data" class="upload-form">
             <label for="titulo">Título:</label>

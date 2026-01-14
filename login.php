@@ -90,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php endif; ?>
 
             <div class="form-footer">
-                <a class="small-link" href="sing_in.php">¿No tienes cuenta? Regístrate</a>
+                <a class="small-link" href="crear_cuenta.php">¿No tienes cuenta? Regístrate</a>
             </div>
         </form>
     </div>
