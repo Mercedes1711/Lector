@@ -38,6 +38,18 @@ if (empty($_SESSION['usuario'])) {
             <label for="descripcion">Descripción:</label>
             <textarea name="descripcion" id="descripcion" rows="5" required></textarea>
 
+            <label for="categoria">Categoría:</label>
+            <select name="categoria_id" id="categoria" required>
+                <option value="">Selecciona una categoría</option>
+                <?php
+                require __DIR__ . "/conexion_bd.php";
+                $stmt = $conn->query("SELECT id, nombre FROM categorias ORDER BY nombre");
+                while ($cat = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    echo "<option value='{$cat['id']}'>{$cat['nombre']}</option>";
+                }
+                ?>
+            </select>
+
             <label for="portada">Portada (JPG/PNG):</label>
             <input type="file" name="portada" id="portada" accept="image/*" required>
 

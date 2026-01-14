@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $titulo = trim($_POST['titulo']);
     $descripcion = trim($_POST['descripcion']);
+    $categoria_id = !empty($_POST['categoria_id']) ? (int)$_POST['categoria_id'] : null;
 
     if ($titulo === '' || $descripcion === '' || !isset($_FILES['portada'])) {
         die("Datos incompletos. Rellena todos los campos.");
@@ -36,10 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Insertar en la base de datos
     $stmt = $conn->prepare("
-        INSERT INTO mangas (usuario_id, titulo, descripcion, portada)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO mangas (usuario_id, titulo, descripcion, portada, categoria_id)
+        VALUES (?, ?, ?, ?, ?)
     ");
-    $stmt->execute([$usuario_id, $titulo, $descripcion, $rutaPortada]);
+    $stmt->execute([$usuario_id, $titulo, $descripcion, $rutaPortada, $categoria_id]);
 
     // ---- ALERTA ----
     echo "<script>
