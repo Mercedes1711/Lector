@@ -72,7 +72,7 @@ $capitulos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if ($capitulos) {
     foreach ($capitulos as $cap) {
-        echo "<li>" . htmlspecialchars($cap['titulo']) . " - <a href='" . htmlspecialchars($cap['archivo']) . "' target='_blank'>📖 Ver</a></li>";
+        echo "<li>" . htmlspecialchars($cap['titulo']) . " - <a href='leer_capitulo.php?capitulo=" . $cap['id'] . "'>📖 Leer</a></li>";
     }
 } else {
     echo "<li>No hay capítulos subidos todavía.</li>";
