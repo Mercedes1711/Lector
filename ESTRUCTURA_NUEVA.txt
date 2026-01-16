@@ -1,0 +1,88 @@
+📁 ESTRUCTURA FINAL ORGANIZADA
+================================
+
+Lector/
+│
+├── 📄 index.php                     ← Archivo de redirección (raíz)
+├── 📄 composer.json                 ← Configuración de dependencias
+├── 📄 .htaccess                     ← Reglas de redirección (Apache)
+│
+├── 📂 public/                       ← Archivos accesibles públicamente
+│   ├── index.php                    ← Página principal
+│   ├── login.php                    ← Iniciar sesión
+│   ├── logout.php                   ← Cerrar sesión
+│   ├── crear_cuenta.php             ← Registro de usuarios
+│   ├── forgot_password.php          ← Recuperar contraseña
+│   ├── reset_password.php           ← Restablecer contraseña
+│   └── manga_verso.css              ← Estilos
+│
+├── 📂 pages/                        ← Páginas internas (requieren sesión)
+│   ├── perfil.php                   ← Perfil del usuario
+│   ├── subirManga.php               ← Formulario para subir manga
+│   ├── procesar_manga.php           ← Procesar subida de manga
+│   ├── capitulos.php                ← Gestión de capítulos
+│   ├── subir_capitulo.php           ← Procesar subida de capítulo
+│   ├── leer_capitulo.php            ← Visualizar capítulo
+│   ├── eliminar_manga.php           ← Eliminar manga
+│   └── migrar_categorias.php        ← Migración de datos
+│
+├── 📂 src/                          ← Código fuente y configuración
+│   ├── conexion_bd.php              ← Conexión a la base de datos
+│   └── correo.php                   ← Funcionalidad de email
+│
+├── 📂 img/                          ← Portadas de manga subidas
+│
+├── 📂 Manga/                        ← Contenido de manga
+│   ├── archivos/
+│   ├── capitulos/                   ← Capítulos agrupados por manga
+│   │   ├── 1/
+│   │   ├── 4/
+│   │   ├── 5/
+│   │   └── ... (más capítulos)
+│   └── portadas/
+│
+├── 📂 vendor/                       ← Dependencias (PHPMailer)
+│   ├── autoload.php
+│   ├── phpmailer/
+│   └── composer/
+│
+└── 📂 docs/                         ← Documentación y diagramas
+    ├── README.md
+    ├── manga_verso.sql              ← Esquema de base de datos
+    └── Diagram*.uxf                 ← Diagramas UML
+
+
+✅ CAMBIOS REALIZADOS
+=======================
+
+1. ✓ Creadas carpetas: public/, pages/, src/, docs/
+2. ✓ Archivos movidos a sus ubicaciones lógicas
+3. ✓ Actualizado todas las rutas (require, include, href, action)
+4. ✓ Creado archivo .htaccess para redirecciones
+5. ✓ Creado index.php raíz para compatibilidad
+6. ✓ Actualizado src/correo.php con rutas correctas
+7. ✓ Verified todas las referencias de conexión a BD
+
+
+🔒 CONTROL DE ACCESO
+====================
+
+public/  → Accesible sin autenticación (login, registro, etc.)
+pages/   → Requiere sesión activa
+src/     → Archivos internos (no accesibles directamente)
+vendor/  → Dependencias PHP
+
+
+🌐 RUTAS DE ACCESO
+==================
+
+Inicio:        http://localhost/dashboard/Lector/
+o              http://localhost/dashboard/Lector/public/index.php
+
+Login:         http://localhost/dashboard/Lector/public/login.php
+Registro:      http://localhost/dashboard/Lector/public/crear_cuenta.php
+
+Perfil:        http://localhost/dashboard/Lector/pages/perfil.php
+Subir manga:   http://localhost/dashboard/Lector/pages/subirManga.php
+Ver manga:     http://localhost/dashboard/Lector/pages/capitulos.php
+
