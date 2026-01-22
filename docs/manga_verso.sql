@@ -153,7 +153,9 @@ INSERT INTO `usuarios` (`id`, `usuario`, `contraseña`, `email`, `fecha_registro
 --
 ALTER TABLE `capitulos`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `manga_id` (`manga_id`);
+  ADD KEY `manga_id` (`manga_id`),
+  ADD UNIQUE KEY `manga_titulo_unico` (`manga_id`, `titulo`),
+  ADD UNIQUE KEY `archivo_unico` (`archivo`);
 
 --
 -- Indices de la tabla `categorias`

@@ -6,7 +6,7 @@ if (empty($_SESSION['usuario']) || empty($_SESSION['user_id'])) {
 }
 
 require __DIR__ . "/../src/conexion_bd.php";
-$usuario_id = $_SESSION['user_id']; // <-- corregido para coincidir con login.php
+$usuario_id = $_SESSION['user_id']; 
 ?>
 
 <!DOCTYPE html>
@@ -123,7 +123,7 @@ $usuario_id = $_SESSION['user_id']; // <-- corregido para coincidir con login.ph
 
                     <a href="../pages/capitulos.php?manga=<?= $row['id']; ?>">📖 Ver manga</a>
 
-                    <form action="../pages/eliminar_manga.php" method="POST" style="margin-top:10px;">
+                    <form action="../pages/eliminar_manga.php" method="POST" style="margin-top:10px;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este manga? Esta acción no se puede deshacer.');">
                         <input type="hidden" name="manga_id" value="<?= $row['id']; ?>">
                         <button type="submit" class="btn-primary" style="background-color:#dc3545; border:none;">
                             🗑️ Eliminar manga

@@ -62,6 +62,32 @@ if (!move_uploaded_file($archivo['tmp_name'], $rutaArchivo)) {
     exit;
 }
 
+// Verificar que no existe un capítulo con el mismo título en este manga
+$stmt = $conn->prepare("SELECT id FROM capitulos WHERE manga_id = ? AND titulo = ?");
+$stmt->execute([$manga_id, $titulo]);
+$capitulo_duplicado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($capitulo_duplicado) {
+    // Eliminar archivo subido
+    unlink($rutaArchivo);
+    $_SESSION['error'] = "Ya existe un capítulo con el título '" . htmlspecialchars($titulo) . "' en este manga.";
+    header("Location: capitulos.php?manga=$manga_id");
+    exit;
+}
+
+// Verificar que no existe un archivo duplicado en toda la base de datos
+$stmt = $conn->prepare("SELECT id FROM capitulos WHERE archivo = ?");
+$stmt->execute([$rutaArchivoBD]);
+$archivo_duplicado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($archivo_duplicado) {
+    // Eliminar archivo subido
+    unlink($rutaArchivo);
+    $_SESSION['error'] = "Este archivo ya ha sido subido anteriormente.";
+    header("Location: capitulos.php?manga=$manga_id");
+    exit;
+}
+
 // Guardar en BD con ruta relativa a la raíz
 $rutaArchivoBD = "Manga/capitulos/$manga_id/$nombreArchivo";
 

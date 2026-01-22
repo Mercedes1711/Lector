@@ -71,18 +71,45 @@ if (!$manga) {
 </form>
 
 <h2>Capítulos existentes</h2>
+
+<!-- Formulario de búsqueda -->
+<form method="GET" action="" style="margin-bottom:20px;">
+    <input type="hidden" name="manga" value="<?= $manga_id; ?>">
+    <input type="text" name="buscar" placeholder="Buscar capítulo por título..." value="<?= htmlspecialchars($_GET['buscar'] ?? ''); ?>" style="padding:8px; width:300px; border:1px solid #ccc; border-radius:4px;">
+    <button type="submit" class="btn-primary" style="padding:8px 15px;">🔍 Buscar</button>
+    <?php if (!empty($_GET['buscar'])): ?>
+        <a href="capitulos.php?manga=<?= $manga_id; ?>" style="padding:8px 15px; background-color:#6c757d; color:white; border-radius:4px; text-decoration:none; display:inline-block;">✕ Limpiar</a>
+    <?php endif; ?>
+</form>
+
 <ul>
 <?php
-$stmt = $conn->prepare("SELECT * FROM capitulos WHERE manga_id = ? ORDER BY fecha_subida ASC");
-$stmt->execute([$manga_id]);
+$query = "SELECT * FROM capitulos WHERE manga_id = ?";
+$params = [$manga_id];
+
+// Si hay búsqueda, añadir filtro
+if (!empty($_GET['buscar'])) {
+    $query .= " AND titulo LIKE ?";
+    $params[] = "%" . trim($_GET['buscar']) . "%";
+}
+
+$query .= " ORDER BY fecha_subida ASC";
+
+$stmt = $conn->prepare($query);
+$stmt->execute($params);
 $capitulos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if ($capitulos) {
     foreach ($capitulos as $cap) {
-        echo "<li>" . htmlspecialchars($cap['titulo']) . " - <a href='leer_capitulo.php?capitulo=" . $cap['id'] . "'>📖 Leer</a></li>";
+        echo "<li style='margin-bottom:10px;'>" . htmlspecialchars($cap['titulo']) . " - <a href='leer_capitulo.php?capitulo=" . $cap['id'] . "'>📖 Leer</a> 
+        <form action='eliminar_capitulo.php' method='POST' style='display:inline; margin-left:10px;' onsubmit=\"return confirm('¿Eliminar este capítulo?');\">
+            <input type='hidden' name='capitulo_id' value='" . $cap['id'] . "'>
+            <button type='submit' style='background-color:#dc3545; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;'>🗑️ Eliminar</button>
+        </form></li>";
     }
 } else {
-    echo "<li>No hay capítulos subidos todavía.</li>";
+    $mensaje = !empty($_GET['buscar']) ? "No se encontraron capítulos con ese título." : "No hay capítulos subidos todavía.";
+    echo "<li>" . $mensaje . "</li>";
 }
 ?>
 </ul>

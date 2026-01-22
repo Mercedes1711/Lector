@@ -25,8 +25,9 @@ if (!$manga) {
 }
 
 // Borrar archivo de portada si existe
-if (file_exists($manga['portada'])) {
-    unlink($manga['portada']);
+$rutaPortada = "../" . $manga['portada'];
+if (file_exists($rutaPortada)) {
+    unlink($rutaPortada);
 }
 
 // Borrar manga de la base de datos
@@ -38,7 +39,8 @@ $stmt = $conn->prepare("SELECT archivo FROM capitulos WHERE manga_id = ?");
 $stmt->execute([$manga_id]);
 $capitulos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($capitulos as $cap) {
-    if (file_exists($cap['archivo'])) unlink($cap['archivo']);
+    $rutaCapitulo = "../" . $cap['archivo'];
+    if (file_exists($rutaCapitulo)) unlink($rutaCapitulo);
 }
 
 // Borrar capítulos de la base de datos
@@ -48,7 +50,7 @@ $stmt->execute([$manga_id]);
 // Alerta y redirección
 echo "<script>
         alert('¡Manga eliminado correctamente!');
-        window.location.href = 'index.php';
+        window.location.href = '../public/index.php';
       </script>";
 exit;
 ?>
