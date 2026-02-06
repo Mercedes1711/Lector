@@ -12,7 +12,8 @@ if (empty($_SESSION['usuario'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Subir Manga | Manga_verso</title>
-<link rel="stylesheet" href="../public/manga_verso.css">
+<link rel="stylesheet" href="../css/css/manga_verso.css">
+
 </head>
 <body>
 
@@ -56,6 +57,11 @@ if (empty($_SESSION['usuario'])) {
                 }
                 ?>
             </select>
+
+            <label style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+                <input type="checkbox" name="es_original" id="es_original" value="1" style="width: auto;">
+                <span>✨ Este manga es de mi creación original</span>
+            </label>
 
             <label for="portada">Portada (JPG/PNG):</label>
             <input type="file" name="portada" id="portada" accept="image/*" required>

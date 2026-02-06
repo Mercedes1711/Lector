@@ -68,15 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $show_form) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Restablecer Contraseña</title>
-<style>
-body { font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh; background:#f0f0f0; }
-.container { background:white; padding:30px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1); width:350px; text-align:center; }
-input[type=password] { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc; }
-input[type=submit] { padding:10px 20px; border:none; border-radius:5px; background:#28a745; color:white; cursor:pointer; }
-input[type=submit]:hover { background:#218838; }
-.message { margin:15px 0; color:red; }
-.success { color:green; }
-</style>
+<link rel="stylesheet" href="css/css/manga_verso.css">
 </head>
 <body>
 <div class="container">

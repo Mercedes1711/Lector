@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="utf-8">
     <title>Registrarse - Manga_verso</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="manga_verso.css">
+   <link rel="stylesheet" href="../css/css/manga_verso.css">
 </head>
 <body>
 <header>

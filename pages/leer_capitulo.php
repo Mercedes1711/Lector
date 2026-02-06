@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 require __DIR__ . "/../src/conexion_bd.php";
 
@@ -63,7 +66,7 @@ $all_capitulos = $stmt_all->fetchAll(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../public/manga_verso.css">
+<link rel="stylesheet" href="../css/css/manga_verso.css">
 <title>Leyendo: <?= htmlspecialchars($capitulo['titulo']); ?> - <?= htmlspecialchars($capitulo['manga_titulo']); ?></title>
 </head>
 <body>
@@ -82,12 +85,12 @@ $all_capitulos = $stmt_all->fetchAll(PDO::FETCH_ASSOC);
 <main>
 <h1>Leyendo: <?= htmlspecialchars($capitulo['titulo']); ?> de <?= htmlspecialchars($capitulo['manga_titulo']); ?></h1>
 
-<div style="text-align: center; margin: 20px 0;">
+<div class="text-center py-5">
     <?php if ($prev_capitulo): ?>
         <a href="leer_capitulo.php?capitulo=<?= $prev_capitulo['id']; ?>" class="btn-secondary">⬅️ Capítulo anterior</a>
     <?php endif; ?>
 
-    <select onchange="location.href='leer_capitulo.php?capitulo='+this.value;" style="margin: 0 10px;">
+    <select onchange="location.href='leer_capitulo.php?capitulo='+this.value;" class="mx-2">
         <?php foreach ($all_capitulos as $chap): ?>
             <option value="<?= $chap['id']; ?>" <?= $chap['id'] == $capitulo_id ? 'selected' : ''; ?>>
                 <?= htmlspecialchars($chap['titulo']); ?>
@@ -100,11 +103,11 @@ $all_capitulos = $stmt_all->fetchAll(PDO::FETCH_ASSOC);
     <?php endif; ?>
 </div>
 
-<div style="width: 100%; height: 80vh; border: 1px solid #ccc;">
-    <embed src="../<?= htmlspecialchars($capitulo['archivo']); ?>" width="100%" height="100%" type="application/pdf">
+<div class="pdf-container">
+    <embed src="../<?= htmlspecialchars($capitulo['archivo']); ?>" type="application/pdf">
 </div>
 
-<div style="text-align: center; margin: 20px 0;">
+<div class="text-center py-5">
     <a href="capitulos.php?manga=<?= $capitulo['manga_id']; ?>" class="btn-secondary">⬅ Volver a capítulos</a>
 </div>
 </main>

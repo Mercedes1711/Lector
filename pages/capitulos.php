@@ -17,7 +17,7 @@ if (empty($_GET['manga']) || !is_numeric($_GET['manga'])) {
 $manga_id = (int)$_GET['manga'];
 
 // Verificar que el manga pertenece al usuario logueado
-$stmt = $conn->prepare("SELECT titulo FROM mangas WHERE id = ? AND usuario_id = ?");
+$stmt = $conn->prepare("SELECT titulo, es_original FROM mangas WHERE id = ? AND usuario_id = ?");
 $stmt->execute([$manga_id, $usuario_id]);
 $manga = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -31,7 +31,7 @@ if (!$manga) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../public/manga_verso.css">
+<link rel="stylesheet" href="../css/css/manga_verso.css">
 <title>Capítulos de <?= htmlspecialchars($manga['titulo']); ?></title>
 </head>
 <body>
@@ -48,7 +48,9 @@ if (!$manga) {
 </header>
 
 <main>
-<h1>Capítulos de <?= htmlspecialchars($manga['titulo']); ?></h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1 style="margin: 0;">Capítulos de <?= htmlspecialchars($manga['titulo']); ?></h1>
+</div>
 
 <?php if (isset($_SESSION['error'])): ?>
     <div style="color: red; margin-bottom: 20px; border: 1px solid red; padding: 10px; background-color: #ffe6e6;">

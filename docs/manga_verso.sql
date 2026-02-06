@@ -49,6 +49,19 @@ INSERT INTO `capitulos` (`id`, `manga_id`, `titulo`, `archivo`, `fecha_subida`) 
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `mangas_compartidos`
+--
+
+CREATE TABLE `mangas_compartidos` (
+  `id` int(11) NOT NULL,
+  `manga_id` int(11) NOT NULL,
+  `fecha_comparticion` timestamp NOT NULL DEFAULT current_timestamp(),
+  `activo` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `categorias`
 --
 
@@ -149,6 +162,14 @@ INSERT INTO `usuarios` (`id`, `usuario`, `contraseña`, `email`, `fecha_registro
 --
 
 --
+-- Indices de la tabla `mangas_compartidos`
+--
+ALTER TABLE `mangas_compartidos`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `manga_id` (`manga_id`),
+  ADD KEY `activo` (`activo`);
+
+--
 -- Indices de la tabla `capitulos`
 --
 ALTER TABLE `capitulos`
@@ -192,6 +213,12 @@ ALTER TABLE `usuarios`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `mangas_compartidos`
+--
+ALTER TABLE `mangas_compartidos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `capitulos`
 --
 ALTER TABLE `capitulos`
@@ -224,6 +251,12 @@ ALTER TABLE `usuarios`
 --
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `mangas_compartidos`
+--
+ALTER TABLE `mangas_compartidos`
+  ADD CONSTRAINT `mangas_compartidos_ibfk_1` FOREIGN KEY (`manga_id`) REFERENCES `mangas` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `capitulos`

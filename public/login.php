@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 include __DIR__ . '/../src/conexion_bd.php'; // conexión PDO
 
@@ -48,8 +51,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="manga_verso.css">
-    <title>Login - Manga_verso</title>
+<link rel="stylesheet" href="../css/css/manga_verso.css">
+
+    <title>Iniciar Sesión - Manga_verso</title>
 </head>
 <body>
 <header>

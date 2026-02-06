@@ -51,6 +51,49 @@ if (!in_array($ext, ['pdf', 'zip'])) {
     exit;
 }
 
+// Validar el tamaño del archivo (máximo 50MB)
+$max_size = 50 * 1024 * 1024; // 50MB
+if ($archivo['size'] > $max_size) {
+    $_SESSION['error'] = "El archivo es demasiado grande. Máximo 50MB permitido.";
+    header("Location: capitulos.php?manga=$manga_id");
+    exit;
+}
+
+// PRIMERO: Verificar que no existe un capítulo con el mismo título en este manga
+$stmt = $conn->prepare("SELECT id FROM capitulos WHERE manga_id = ? AND titulo = ?");
+$stmt->execute([$manga_id, $titulo]);
+$capitulo_duplicado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($capitulo_duplicado) {
+    $_SESSION['error'] = "Ya existe un capítulo con el título '" . htmlspecialchars($titulo) . "' en este manga.";
+    header("Location: capitulos.php?manga=$manga_id");
+    exit;
+}
+
+// SEGUNDO: Calcular hash del archivo para detectar duplicados por contenido
+$hash_archivo = md5_file($archivo['tmp_name']);
+
+// Verificar si el archivo ya existe en el sistema de archivos
+// Buscar todos los capitulos subidos y comparar hashes
+$stmt = $conn->prepare("SELECT archivo FROM capitulos");
+$stmt->execute();
+$archivos_existentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($archivos_existentes as $arch_existente) {
+    $ruta_existente = "../" . $arch_existente['archivo'];
+    
+    // Si el archivo existe en el disco, calcular su hash y comparar
+    if (file_exists($ruta_existente)) {
+        $hash_existente = md5_file($ruta_existente);
+        
+        if ($hash_archivo === $hash_existente) {
+            $_SESSION['error'] = "Ya has subido ese archivo.";
+            header("Location: capitulos.php?manga=$manga_id");
+            exit;
+        }
+    }
+}
+
 // Nombre único
 $nombreArchivo = uniqid("cap_") . "." . $ext;
 $rutaArchivo = $carpeta . $nombreArchivo;
@@ -58,32 +101,6 @@ $rutaArchivo = $carpeta . $nombreArchivo;
 // Subir archivo
 if (!move_uploaded_file($archivo['tmp_name'], $rutaArchivo)) {
     $_SESSION['error'] = "Error al subir el archivo. Verifica permisos en la carpeta.";
-    header("Location: capitulos.php?manga=$manga_id");
-    exit;
-}
-
-// Verificar que no existe un capítulo con el mismo título en este manga
-$stmt = $conn->prepare("SELECT id FROM capitulos WHERE manga_id = ? AND titulo = ?");
-$stmt->execute([$manga_id, $titulo]);
-$capitulo_duplicado = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if ($capitulo_duplicado) {
-    // Eliminar archivo subido
-    unlink($rutaArchivo);
-    $_SESSION['error'] = "Ya existe un capítulo con el título '" . htmlspecialchars($titulo) . "' en este manga.";
-    header("Location: capitulos.php?manga=$manga_id");
-    exit;
-}
-
-// Verificar que no existe un archivo duplicado en toda la base de datos
-$stmt = $conn->prepare("SELECT id FROM capitulos WHERE archivo = ?");
-$stmt->execute([$rutaArchivoBD]);
-$archivo_duplicado = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if ($archivo_duplicado) {
-    // Eliminar archivo subido
-    unlink($rutaArchivo);
-    $_SESSION['error'] = "Este archivo ya ha sido subido anteriormente.";
     header("Location: capitulos.php?manga=$manga_id");
     exit;
 }
