@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Línea de seguridad para forzar contenido */
+.fuerza-contenido { color: red; }
