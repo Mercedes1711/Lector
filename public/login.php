@@ -95,11 +95,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     <div class="hidden lg:flex flex-col gap-8 absolute left-8 z-10">
         <div class="illustration-box -rotate-6 opacity-95">
-             <img src="https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=400&auto=format&fit=crop" alt="Protagonista" class="w-40">
+        <img src="https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=400&auto=format&fit=crop" alt="Protagonista" class="w-40">
         </div>
         <div class="illustration-box rotate-3 opacity-90">
-             <img src="https://images.unsplash.com/photo-1541562232579-512a21360020?q=80&w=400&auto=format&fit=crop" alt="Ojo" class="w-32">
-             <div class="text-black font-black text-[10px] text-center mt-1 uppercase">EDICIÓN ESPECIAL</div>
+        <img src="https://images.unsplash.com/photo-1541562232579-512a21360020?q=80&w=400&auto=format&fit=crop" alt="Ojo" class="w-32">
+        <div class="text-black font-black text-[10px] text-center mt-1 uppercase">EDICIÓN ESPECIAL</div>
         </div>
         <h3 class="manga-font text-5xl text-blue-400 -rotate-12 select-none">KA-BOOM!</h3>
     </div>
@@ -112,11 +112,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="hidden lg:flex flex-col items-end gap-8 absolute right-8 z-10">
         <h3 class="manga-font text-5xl text-pink-400 rotate-12 select-none">GOGOGO...</h3>
         <div class="illustration-box -rotate-3 opacity-90">
-             <img src="https://images.unsplash.com/photo-1542332213-31f87348057f?q=80&w=400&auto=format&fit=crop" alt="Neo Tokyo" class="w-40">
-             <div class="text-black font-black text-[10px] text-center mt-1 uppercase">PÁGINA FINAL</div>
+        <img src="https://images.unsplash.com/photo-1542332213-31f87348057f?q=80&w=400&auto=format&fit=crop" alt="Neo Tokyo" class="w-40">
+        <div class="text-black font-black text-[10px] text-center mt-1 uppercase">PÁGINA FINAL</div>
         </div>
         <div class="illustration-box rotate-6 opacity-95">
-             <img src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?q=80&w=400&auto=format&fit=crop" alt="Samurai" class="w-32">
+        <img src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?q=80&w=400&auto=format&fit=crop" alt="Samurai" class="w-32">
         </div>
     </div>
 
@@ -148,13 +148,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div>
                         <label class="block text-[9px] font-black text-blue-600 uppercase mb-1 tracking-tighter">Usuario / ユーザー</label>
                         <input type="text" name="usuario" placeholder="TU NOMBRE" required
-                               class="w-full p-2.5 border-2 border-slate-900 text-slate-900 font-bold text-sm focus:border-pink-500 outline-none rounded-none">
+                        class="w-full p-2.5 border-2 border-slate-900 text-slate-900 font-bold text-sm focus:border-pink-500 outline-none rounded-none">
                     </div>
 
                     <div>
                         <label class="block text-[9px] font-black text-blue-600 uppercase mb-1 tracking-tighter">Password / パスワード</label>
                         <input type="password" name="contraseña" placeholder="••••••••" required
-                               class="w-full p-2.5 border-2 border-slate-900 text-slate-900 font-bold text-sm focus:border-pink-500 outline-none rounded-none">
+                        class="w-full p-2.5 border-2 border-slate-900 text-slate-900 font-bold text-sm focus:border-pink-500 outline-none rounded-none">
                     </div>
 
                     <div class="pt-1">
@@ -176,7 +176,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <p class="mt-6 text-center text-[9px] text-blue-700/50 font-bold uppercase tracking-[0.3em]">
-             ADRIAN & MERCEDES 2026
+            ADRIAN & MERCEDES 2026
             
         </p>
     
