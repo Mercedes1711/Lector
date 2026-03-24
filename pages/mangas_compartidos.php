@@ -10,10 +10,16 @@ if (empty($_SESSION['usuario']) || empty($_SESSION['user_id'])) {
 
 $usuario_id = $_SESSION['user_id'];
 
-// Obtener término de búsqueda si existe
+// Obtener parámetros de búsqueda y filtros
 $busqueda = isset($_GET['busqueda']) ? trim($_GET['busqueda']) : '';
+$categoria_id = isset($_GET['categoria']) ? $_GET['categoria'] : '';
+$orden = isset($_GET['orden']) ? $_GET['orden'] : 'recientes';
 
-// Obtener mangas compartidos con información completa
+// Obtener todas las categorías para el select
+$stmt_cats = $conn->query("SELECT id, nombre FROM categorias ORDER BY nombre");
+$categorias = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
+
+// Consulta Mangas de otros usuarios
 $query = "
     SELECT m.id, m.titulo, m.descripcion, m.portada, m.fecha_subida, m.categoria_id, m.es_original, u.usuario as autor,
            COUNT(c.id) as total_capitulos, mc.fecha_comparticion
@@ -32,103 +38,184 @@ if (!empty($busqueda)) {
     $params[] = "%" . $busqueda . "%";
 }
 
-$query .= " GROUP BY m.id ORDER BY mc.fecha_comparticion DESC";
+if (!empty($categoria_id)) {
+    $query .= " AND m.categoria_id = ?";
+    $params[] = $categoria_id;
+}
+
+$query .= " GROUP BY m.id";
+
+// Ordenamiento dinámico
+if ($orden === 'antiguos') {
+    $query .= " ORDER BY mc.fecha_comparticion ASC";
+} elseif ($orden === 'capitulos') {
+    $query .= " ORDER BY total_capitulos DESC, mc.fecha_comparticion DESC";
+} else {
+    $query .= " ORDER BY mc.fecha_comparticion DESC";
+}
 
 $stmt = $conn->prepare($query);
 $stmt->execute($params);
 $mangas_compartidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Obtener mis mangas compartidos
-$stmt_mios = $conn->prepare("
-    SELECT m.id, m.titulo, m.descripcion, m.portada, m.fecha_subida, m.categoria_id, m.es_original,
-           COUNT(c.id) as total_capitulos, mc.activo, mc.fecha_comparticion
-    FROM mangas_compartidos mc
-    JOIN mangas m ON mc.manga_id = m.id
-    LEFT JOIN capitulos c ON m.id = c.manga_id
-    WHERE m.usuario_id = ?
-    GROUP BY m.id
-    ORDER BY mc.fecha_comparticion DESC
-");
-$stmt_mios->execute([$usuario_id]);
-$mis_mangas_compartidos = $stmt_mios->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/css/manga_verso.css">
-<title>Mangas Compartidos - Manga_verso</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorar Mangas - Manga_verso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Outfit:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; color: white; min-height: 100vh; display: flex; flex-direction: column; }
+        .manga-font { font-family: 'Bangers', cursive; letter-spacing: 0.05em; }
+        
+        /* Efecto Sakura */
+        .sakura {
+            position: fixed; background: #f472b6; border-radius: 100% 0% 100% 0%;
+            opacity: 0.7; pointer-events: none; z-index: 1; animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        .manga-card-panel {
+            background: white; border: 3px solid #000;
+            box-shadow: 8px 8px 0px #3b82f6; transition: 0.2s;
+        }
+        .manga-card-panel:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px #f472b6;
+        }
+    </style>
 </head>
-<body>
+<body class="overflow-x-hidden">
 
-<header>
-    <div>
-        <h1>Manga_verso</h1>
-        <p>Tu portal de manga</p>
-    </div>
-    <div class="auth-logged">
-        <a href="perfil.php"><?= htmlspecialchars($_SESSION['usuario']); ?></a>
-        <a href="../public/logout.php">Cerrar sesión</a>
-    </div>
-</header>
+    <div id="sakura-container" class="fixed inset-0 pointer-events-none z-0"></div>
 
-<main>
-    <h1>📚 Mangas Compartidos</h1>
-    
-    <!-- MANGAS DE OTROS USUARIOS -->
-    <div class="section-title">Mangas compartidos</div>
-    
-    <!-- Buscador -->
-    <div class="buscador-container">
-        <form method="GET" class="buscador-form">
-            <input type="text" name="busqueda" placeholder="Buscar por título o autor..." value="<?= htmlspecialchars($busqueda); ?>">
-            <button type="submit">🔍 Buscar</button>
-            <?php if (!empty($busqueda)): ?>
-                <a href="mangas_compartidos.php">✕ Limpiar</a>
-            <?php endif; ?>
-        </form>
-    </div>
-    
-    <?php if ($mangas_compartidos): ?>
-        <p style="color: #666; margin-bottom: 20px;">Se encontraron <?= count($mangas_compartidos); ?> manga(s)</p>
-        <div class="mangas-grid">
-            <?php foreach ($mangas_compartidos as $manga): ?>
-                <div class="manga-card">
-                    <img src="../<?= htmlspecialchars($manga['portada']); ?>" 
-                         alt="<?= htmlspecialchars($manga['titulo']); ?>" 
-                         class="manga-card-img"
-                         onerror="this.src='../img/placeholder.png'">
-                    <div class="manga-card-info">
-                        <div class="manga-card-titulo"><?= htmlspecialchars($manga['titulo']); ?></div>
-                        <?php if ($manga['es_original']): ?>
-                            <div class="manga-card-autor" style="color: #FFD700; font-weight: bold;">✨ Original por <?= htmlspecialchars($manga['autor']); ?></div>
-                        <?php else: ?>
-                            <div class="manga-card-autor">👤 <?= htmlspecialchars($manga['autor']); ?></div>
-                        <?php endif; ?>
-                        <div class="manga-card-capitulos">📖 <?= $manga['total_capitulos']; ?> capítulo(s)</div>
-                        <div class="manga-card-actions">
-                            <a href="leer_manga_compartido.php?manga=<?= $manga['id']; ?>" class="btn-leer">📖 Leer</a>
+    <header class="bg-white border-b-4 border-black p-4 relative z-50 text-black">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="manga-font text-4xl italic transform -rotate-1">
+                MANGA<span class="text-blue-500">_</span>VERSO
+            </h1>
+            <div class="flex items-center gap-4">
+                <span class="hidden md:block font-black text-sm uppercase">Bienvenido, <?= htmlspecialchars($_SESSION['usuario']); ?></span>
+                <a href="perfil.php" class="bg-yellow-400 p-2 border-2 border-black shadow-[3px_3px_0px_#000] hover:shadow-none transition-all">👤</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 relative z-10 flex-grow">
+        
+        <div class="flex flex-col xl:flex-row justify-between items-center mb-12 gap-6 w-full">
+            <h2 class="manga-font text-6xl italic drop-shadow-[4px_4px_0px_#3b82f6] xl:w-1/4 text-center xl:text-left">COMUNIDAD</h2>
+            
+            <form method="GET" class="flex flex-col md:flex-row w-full xl:w-3/4 justify-end gap-3 flex-wrap">
+                <div class="flex-grow md:min-w-[200px]">
+                    <input type="text" name="busqueda" placeholder="Buscar título o autor..." 
+                           value="<?= htmlspecialchars($busqueda); ?>"
+                           class="w-full border-4 border-black p-2 text-black font-bold outline-none focus:bg-blue-50 h-full">
+                </div>
+                
+                <select name="categoria" class="border-4 border-black p-2 text-black font-bold outline-none focus:bg-pink-50 cursor-pointer flex-grow md:flex-grow-0">
+                    <option value="">Categoría: Todas</option>
+                    <?php foreach ($categorias as $cat): ?>
+                        <option value="<?= $cat['id'] ?>" <?= ($categoria_id == $cat['id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($cat['nombre']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <select name="orden" class="border-4 border-black p-2 text-black font-bold outline-none focus:bg-blue-50 cursor-pointer flex-grow md:flex-grow-0">
+                    <option value="recientes" <?= ($orden === 'recientes') ? 'selected' : '' ?>>Más recientes</option>
+                    <option value="antiguos" <?= ($orden === 'antiguos') ? 'selected' : '' ?>>Más antiguos</option>
+                    <option value="capitulos" <?= ($orden === 'capitulos') ? 'selected' : '' ?>>Más capítulos</option>
+                </select>
+
+                <button type="submit" class="bg-black text-white px-6 py-2 font-black border-4 border-black shadow-[4px_4px_0px_#f472b6] hover:bg-blue-600 hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">🔍</button>
+                
+                <?php if (!empty($busqueda) || !empty($categoria_id) || $orden !== 'recientes'): ?>
+                    <a href="mangas_compartidos.php" class="bg-red-500 flex justify-center items-center px-4 py-2 border-4 border-black font-black text-white shadow-[4px_4px_0px_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all" title="Limpiar filtros">✕</a>
+                <?php endif; ?>
+            </form>
+        </div>
+
+        <?php if ($mangas_compartidos): ?>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+                <?php foreach ($mangas_compartidos as $manga): ?>
+                    <div class="manga-card-panel flex flex-col h-full overflow-hidden text-black">
+                        <div class="relative">
+                            <img src="../<?= htmlspecialchars($manga['portada']); ?>" 
+                                 class="w-full h-72 object-cover border-b-4 border-black"
+                                 onerror="this.src='../img/placeholder.png'">
+                            <div class="absolute top-2 right-2 bg-yellow-400 border-2 border-black px-2 py-1 font-black text-xs shadow-[2px_2px_0px_#000]">
+                                📖 <?= $manga['total_capitulos']; ?> CAP.
+                            </div>
+                        </div>
+
+                        <div class="p-4 flex flex-col flex-grow">
+                            <h3 class="manga-font text-2xl leading-tight mb-2 truncate"><?= htmlspecialchars($manga['titulo']); ?></h3>
+                            
+                            <?php if ($manga['es_original']): ?>
+                                <span class="bg-pink-100 text-pink-600 text-[10px] font-black px-2 py-1 border border-pink-600 self-start mb-3">✨ ORIGINAL</span>
+                            <?php endif; ?>
+
+                            <div class="flex items-center gap-2 mb-4 text-sm font-bold text-slate-600">
+                                <span class="bg-blue-100 p-1 rounded">👤</span>
+                                <span><?= htmlspecialchars($manga['autor']); ?></span>
+                            </div>
+
+                            <a href="leer_manga_compartido.php?manga=<?= $manga['id']; ?>" 
+                               class="mt-auto block text-center bg-blue-500 text-white py-3 manga-font text-2xl border-4 border-black shadow-[4px_4px_0px_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                                LEER AHORA
+                            </a>
                         </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php else: ?>
-        <div class="empty-message">
-            <p>No hay mangas compartidos disponibles en este momento.</p>
-            <p>¡Sé el primero en compartir tu manga!</p>
-        </div>
-    <?php endif; ?>
-    
-    <div style="text-align: center; margin-top: 40px;">
-        <a href="../public/index.php" class="btn-secondary">🏠 Volver al inicio</a>
-    </div>
-</main>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="manga-panel bg-white border-4 border-black p-12 text-center text-black shadow-[10px_10px_0px_#3b82f6]">
+                <p class="manga-font text-4xl mb-4">¡Vaya! No hay nada aquí.</p>
+                <p class="font-bold italic text-slate-500">Nadie ha compartido este manga todavía o el autor no existe.</p>
+                <a href="mangas_compartidos.php" class="inline-block mt-6 text-blue-600 font-black underline">VER TODO EL CATÁLOGO</a>
+            </div>
+        <?php endif; ?>
 
-<footer>
-    <p>&copy; 2025 Manga_verso</p>
-</footer>
+        <div class="flex justify-center mt-20 mb-10">
+            <a href="../public/index.php" class="group relative inline-block transition-transform hover:scale-105 active:scale-95">
+                <div class="absolute inset-0 bg-blue-600 translate-x-1.5 translate-y-1.5 group-hover:bg-pink-500 transition-colors"></div>
+                <div class="relative bg-white border-2 border-black px-8 py-2 flex items-center gap-3">
+                    <span class="text-pink-500 font-black text-sm">«</span>
+                    <span class="font-black text-[11px] text-black uppercase tracking-[0.2em] italic">Volver al Inicio</span>
+                    <span class="text-pink-500 font-black text-sm">»</span>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <footer class="py-10 text-center opacity-30 text-[10px] font-black tracking-[0.5em] uppercase">
+        &copy; 2026 Manga_verso • GALERÍA PÚBLICA
+    </footer>
+
+    <script>
+        function createSakura() {
+            const container = document.getElementById('sakura-container');
+            for (let i = 0; i < 20; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'sakura';
+                const size = Math.random() * 8 + 5;
+                petal.style.width = size + 'px';
+                petal.style.height = size + 'px';
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.animationDuration = (Math.random() * 6 + 4) + 's';
+                petal.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(petal);
+            }
+        }
+        window.onload = createSakura;
+    </script>
 </body>
 </html>

@@ -1,7 +1,10 @@
 <?php
 
 // Define la base URL de la aplicación
-define('BASE_URL', '/dashboard/Lector/');
+// Solo define la constante si no ha sido definida antes
+if (!defined('BASE_URL')) {
+    define('BASE_URL', 'http://localhost/dashboard/Lector/');
+}
 
 // Datos de conexión
 $host = "localhost";     // Servidor (localhost si usas XAMPP)
@@ -15,6 +18,7 @@ try {
 
     // Configurar modo de errores para que lance excepciones
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 } catch (PDOException $e) {
     echo "Error de conexión: " . $e->getMessage();
 }
