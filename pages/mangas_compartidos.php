@@ -10,15 +10,22 @@ if (empty($_SESSION['usuario']) || empty($_SESSION['user_id'])) {
 
 $usuario_id = $_SESSION['user_id'];
 
+<<<<<<< HEAD
 // Obtener parámetros de búsqueda y filtros
+=======
+// Obtener término de búsqueda
+>>>>>>> 6f4167d715a3390df81e634f0e9c15436501f697
 $busqueda = isset($_GET['busqueda']) ? trim($_GET['busqueda']) : '';
 $categoria_id = isset($_GET['categoria']) ? $_GET['categoria'] : '';
 $orden = isset($_GET['orden']) ? $_GET['orden'] : 'recientes';
 
+<<<<<<< HEAD
 // Obtener todas las categorías para el select
 $stmt_cats = $conn->query("SELECT id, nombre FROM categorias ORDER BY nombre");
 $categorias = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
 
+=======
+>>>>>>> 6f4167d715a3390df81e634f0e9c15436501f697
 // Consulta Mangas de otros usuarios
 $query = "
     SELECT m.id, m.titulo, m.descripcion, m.portada, m.fecha_subida, m.categoria_id, m.es_original, u.usuario as autor,
@@ -110,6 +117,7 @@ $mangas_compartidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <main class="container mx-auto px-6 py-12 relative z-10 flex-grow">
         
+<<<<<<< HEAD
         <div class="flex flex-col xl:flex-row justify-between items-center mb-12 gap-6 w-full">
             <h2 class="manga-font text-6xl italic drop-shadow-[4px_4px_0px_#3b82f6] xl:w-1/4 text-center xl:text-left">COMUNIDAD</h2>
             
@@ -139,6 +147,18 @@ $mangas_compartidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 
                 <?php if (!empty($busqueda) || !empty($categoria_id) || $orden !== 'recientes'): ?>
                     <a href="mangas_compartidos.php" class="bg-red-500 flex justify-center items-center px-4 py-2 border-4 border-black font-black text-white shadow-[4px_4px_0px_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all" title="Limpiar filtros">✕</a>
+=======
+        <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+            <h2 class="manga-font text-6xl italic drop-shadow-[4px_4px_0px_#3b82f6]">COMUNIDAD</h2>
+            
+            <form method="GET" class="flex w-full md:w-auto">
+                <input type="text" name="busqueda" placeholder="Buscar título o autor..." 
+                       value="<?= htmlspecialchars($busqueda); ?>"
+                       class="flex-1 md:w-80 border-4 border-black p-3 text-black font-bold outline-none focus:bg-blue-50">
+                <button type="submit" class="bg-black text-white px-6 font-black border-y-4 border-r-4 border-black hover:bg-blue-600 transition-colors">🔍</button>
+                <?php if (!empty($busqueda)): ?>
+                    <a href="mangas_compartidos.php" class="ml-2 bg-red-500 flex items-center px-4 border-4 border-black font-black">✕</a>
+>>>>>>> 6f4167d715a3390df81e634f0e9c15436501f697
                 <?php endif; ?>
             </form>
         </div>
