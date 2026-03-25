@@ -15,9 +15,11 @@ $busqueda = isset($_GET['busqueda']) ? trim($_GET['busqueda']) : '';
 $categoria_id = isset($_GET['categoria']) ? $_GET['categoria'] : '';
 $orden = isset($_GET['orden']) ? $_GET['orden'] : 'recientes';
 
+
 // Obtener todas las categorías para el select
 $stmt_cats = $conn->query("SELECT id, nombre FROM categorias ORDER BY nombre");
 $categorias = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
+
 
 // Consulta Mangas de otros usuarios
 $query = "
@@ -110,6 +112,7 @@ $mangas_compartidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <main class="container mx-auto px-6 py-12 relative z-10 flex-grow">
         
+
         <div class="flex flex-col xl:flex-row justify-between items-center mb-12 gap-6 w-full">
             <h2 class="manga-font text-6xl italic drop-shadow-[4px_4px_0px_#3b82f6] xl:w-1/4 text-center xl:text-left">COMUNIDAD</h2>
             
