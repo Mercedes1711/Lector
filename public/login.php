@@ -12,7 +12,7 @@ if (!isset($_SESSION['login_fails'])) {
 }
 
 if (!empty($_SESSION['usuario'])) {
-    header('Location: perfil.php');
+    header('Location: ' . BASE_URL . 'pages/perfil.php');
     exit;
 }
 
@@ -23,17 +23,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($usuario === '' || $contraseña === '') {
         $error = 'Rellena todos los campos.';
     } else {
-        $sql = "SELECT id, usuario, contraseña, email FROM usuarios WHERE usuario = ?";
+        $sql = "SELECT id, usuario, password, email FROM usuarios WHERE usuario = ?";
         $stmt = $conn->prepare($sql);
         $stmt->execute([$usuario]);
         $fila = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($fila && password_verify($contraseña, $fila['contraseña'])) {
+        if ($fila && password_verify($contraseña, $fila['password'])) {
             $_SESSION['user_id'] = $fila['id'];
             $_SESSION['usuario'] = $fila['usuario'];
             $_SESSION['email'] = $fila['email'];
             $_SESSION['login_fails'] = 0;
-            header("Location: index.php");
+            
+            // Redirigir según parámetro o por defecto a index.php
+            $redirect = $_GET['redirect'] ?? 'index.php';
+            // Simple validación para evitar redirecciones externas maliciosas
+            if (strpos($redirect, 'http') === 0 || strpos($redirect, '//') === 0) {
+                $redirect = 'index.php';
+            }
+            
+            header("Location: " . $redirect);
             exit;
         } else {
             $_SESSION['login_fails']++;
@@ -164,10 +172,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
 
                     <div class="text-center pt-3 border-t border-slate-100 flex flex-col gap-1">
-                        <a href="crear_cuenta.php" class="text-[10px] font-black text-pink-500 hover:text-blue-600 underline">
+                        <a href="<?= BASE_URL ?>public/crear_cuenta.php" class="text-[10px] font-black text-pink-500 hover:text-blue-600 underline">
                             REGISTRO
                         </a>
-                        <a href="forgot_password.php" class="text-[10px] font-black text-pink-500 hover:text-blue-600 underline">
+                        <a href="<?= BASE_URL ?>public/forgot_password.php" class="text-[10px] font-black text-pink-500 hover:text-blue-600 underline">
                             RECUPERAR CLAVE
                         </a>
                     </div>

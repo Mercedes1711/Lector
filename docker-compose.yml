@@ -1,0 +1,68 @@
+
+services:
+  # Servicio de Base de Datos (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: manga_verso_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: Manga_verso
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: user_manga
+      MYSQL_PASSWORD: user_password
+    ports:
+      - "3307:3306" # Puerto externo 3307
+    volumes:
+      - db_data:/var/lib/mysql
+      - "./base de datos/manga_verso.sql:/docker-entrypoint-initdb.d/init.sql"
+    networks:
+      - manga_network
+
+  # Servicio Web (PHP + Apache)
+  web:
+    build: .
+    container_name: manga_verso_web
+    restart: always
+    ports:
+      - "8080:80" # Acceso en http://localhost:8080
+      - "8443:443" # Acceso en https://localhost:8443
+      - "2222:22" # Acceso SSH en el puerto 2222
+    environment:
+      - DB_HOST=db
+      - DB_NAME=Manga_verso
+      - DB_USER=user_manga
+      - DB_PASS=user_password
+      - DB_PORT=3306
+
+    depends_on:
+      - db
+    volumes:
+      - .:/var/www/html
+      - manga_storage:/var/www/html/Manga
+    networks:
+      - manga_network
+
+  # Gestor de Base de Datos (Opcional)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: manga_verso_pma
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - MYSQL_ROOT_PASSWORD=root_password
+    depends_on:
+      - db
+    networks:
+      - manga_network
+
+networks:
+  manga_network:
+    driver: bridge
+
+volumes:
+  db_data:
+  manga_storage:
+

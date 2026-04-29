@@ -5,7 +5,7 @@ include __DIR__ . '/../src/conexion_bd.php';
 $error = '';
 
 if (!empty($_SESSION['usuario'])) {
-    header('Location: perfil.php');
+    header('Location: ' . BASE_URL . 'pages/perfil.php');
     exit;
 }
 
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'El usuario o correo ya está en uso.';
         } else {
             $hash = password_hash($contraseña, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO usuarios (usuario, contraseña, email) VALUES (?, ?, ?)";
+            $sql = "INSERT INTO usuarios (usuario, password, email) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($sql);
             $ok = $stmt->execute([$usuario, $hash, $correo]);
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $id;
                 $_SESSION['usuario'] = $usuario;
                 $_SESSION['email'] = $correo;
-                header('Location: index.php');
+                header('Location: ' . BASE_URL . 'public/index.php');
                 exit;
             } else {
                 $error = 'No se pudo crear la cuenta.';
@@ -141,14 +141,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="submit" class="btn-manga w-full py-4 text-white manga-font text-2xl uppercase italic tracking-widest hover:brightness-110">ACTIVAR CUENTA</button>
                     </div>
                     <div class="text-center pt-4 border-t border-slate-100">
-                        <a href="login.php" class="text-xs font-black text-pink-500 hover:text-blue-600 underline underline-offset-4 decoration-2">¿YA TIENES CUENTA? ACCEDER</a>
+                        <a href="<?= BASE_URL ?>public/login.php" class="text-xs font-black text-pink-500 hover:text-blue-600 underline underline-offset-4 decoration-2">¿YA TIENES CUENTA? ACCEDER</a>
                     </div>
                 </form>
             </div>
         </div>
 
         <div class="flex justify-center mt-8">
-            <a href="../public/index.php" class="group relative inline-block">
+            <a href="<?= BASE_URL ?>public/index.php" class="group relative inline-block">
                 <div class="absolute inset-0 bg-slate-700 translate-x-1 translate-y-1 group-hover:bg-blue-500 transition-colors"></div>
                 <div class="relative bg-white border-2 border-black px-5 py-1.5 flex items-center gap-3 hover:-translate-x-0.5 hover:-translate-y-0.5 transition-transform active:translate-x-0 active:translate-y-0">
                     <span class="text-pink-500 font-black text-xs">«</span>

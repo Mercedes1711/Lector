@@ -1,0 +1,15 @@
+.git
+.gitignore
+node_modules
+vendor
+Manga/
+base de datos/
+composer.lock
+package-lock.json
+.env
+Dockerfile
+docker-compose.yml
+README.md
+*.log
+.vscode
+.idea
