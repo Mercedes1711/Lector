@@ -238,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_password'])) 
                 if ($mangas): foreach ($mangas as $m): ?>
                     <div class="bg-white border-4 border-black p-3 shadow-[6px_6px_0px_#000] group">
                         <div class="overflow-hidden mb-3">
-                            <img src="../<?= htmlspecialchars($m['portada']); ?>" class="w-full h-64 object-cover grayscale group-hover:grayscale-0 transition-all duration-300" onerror="this.src='../img/placeholder.png'">
+                            <img src="../<?= htmlspecialchars($m['portada']); ?>" class="w-full h-64 object-cover grayscale group-hover:grayscale-0 transition-all duration-300" onerror="this.src='../img/blog_placeholder.png'">
                         </div>
                         <h4 class="manga-font text-xl text-black truncate"><?= htmlspecialchars($m['titulo']); ?></h4>
                         <a href="biblioteca.php" class="block text-center bg-blue-500 text-white text-[10px] font-black py-1 mt-2 border-2 border-black shadow-[2px_2px_0px_#000]">GESTIONAR</a>

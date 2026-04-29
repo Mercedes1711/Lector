@@ -169,7 +169,7 @@ $active_tab = $_GET['tab'] ?? 'mis-mangas';
             <?php if ($mangas_subidos): ?>
                 <?php foreach ($mangas_subidos as $m): ?>
                     <div class="manga-card p-4 flex flex-col h-full">
-                        <img src="../<?= htmlspecialchars($m['portada']) ?>" class="w-full aspect-[3/4] object-cover mb-4 border border-white/10" onerror="this.src='../img/placeholder.png'">
+                        <img src="../<?= htmlspecialchars($m['portada']) ?>" class="w-full aspect-[3/4] object-cover mb-4 border border-white/10" onerror="this.src='../img/blog_placeholder.png'">
                         <h3 class="manga-font text-xl truncate mb-1"><?= htmlspecialchars($m['titulo']) ?></h3>
                         <span class="text-blue-400 font-black text-[10px] uppercase mb-4"><?= htmlspecialchars($m['categoria_nombre'] ?? 'Sin categoría') ?></span>
                         
@@ -199,7 +199,7 @@ $active_tab = $_GET['tab'] ?? 'mis-mangas';
             <?php if ($mangas_coleccion): ?>
                 <?php foreach ($mangas_coleccion as $c): ?>
                     <div class="manga-card p-4 flex flex-col h-full">
-                        <img src="../<?= htmlspecialchars($c['portada']) ?>" class="w-full aspect-[3/4] object-cover mb-4 border border-white/10" onerror="this.src='../img/placeholder.png'">
+                        <img src="../<?= htmlspecialchars($c['portada']) ?>" class="w-full aspect-[3/4] object-cover mb-4 border border-white/10" onerror="this.src='../img/blog_placeholder.png'">
                         <h3 class="manga-font text-xl truncate mb-1"><?= htmlspecialchars($c['titulo']) ?></h3>
                         
                         <div class="flex items-center justify-between mb-2">

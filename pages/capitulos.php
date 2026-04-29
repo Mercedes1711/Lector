@@ -236,7 +236,7 @@ if (!$manga) {
             <div class="flex items-center justify-between">
                 <!-- Logo -->
                 <div>
-                    <h1 class="manga-font text-4xl md:text-5xl italic transform -rotate-1">
+                    <h1 class="manga-font text-4xl md:text-5xl italic transform -rotate-1 text-slate-900">
                         MANGA<span class="text-blue-500">_</span>VERSO
                     </h1>
                     <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mt-1">Tu Portal de Manga</p>

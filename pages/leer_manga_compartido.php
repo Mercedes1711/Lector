@@ -278,7 +278,7 @@ $en_biblioteca = $stmt_biblioteca->fetch(PDO::FETCH_ASSOC);
                     <div class="border-4 border-black shadow-[6px_6px_0px_#000]">
                         <img src="../<?= htmlspecialchars($manga['portada']); ?>" 
                              alt="<?= htmlspecialchars($manga['titulo']); ?>"
-                             onerror="this.src='../img/placeholder.png'"
+                             onerror="this.src='../img/blog_placeholder.png'"
                              class="w-full">
                     </div>
                 </div>

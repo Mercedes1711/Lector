@@ -192,7 +192,7 @@ $mangas_compartidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="relative">
                             <img src="../<?= htmlspecialchars($manga['portada']); ?>" 
                                  class="w-full h-72 object-cover border-b-4 border-black"
-                                 onerror="this.src='../img/placeholder.png'">
+                                 onerror="this.src='../img/blog_placeholder.png'">
                             <div class="absolute top-2 right-2 bg-yellow-400 border-2 border-black px-2 py-1 font-black text-xs shadow-[2px_2px_0px_#000]">
                                 📖 <?= $manga['total_capitulos']; ?> CAP.
                             </div>
