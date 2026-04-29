@@ -61,10 +61,10 @@ if (!in_array($ext, ['pdf', 'zip'])) {
     exit;
 }
 
-// Validar el tamaño del archivo (máximo 50MB)
-$max_size = 50 * 1024 * 1024; // 50MB
+// Validar el tamaño del archivo (máximo 120MB)
+$max_size = 120 * 1024 * 1024; // 120MB
 if ($archivo['size'] > $max_size) {
-    $_SESSION['error'] = "El archivo es demasiado grande. Máximo 50MB permitido.";
+    $_SESSION['error'] = "El archivo es demasiado grande. Máximo 120MB permitido.";
     header("Location: capitulos.php?manga=$manga_id");
     exit;
 }
