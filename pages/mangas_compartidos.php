@@ -2,26 +2,53 @@
 session_start();
 require __DIR__ . "/../src/conexion_bd.php";
 
-// Verificar sesión
-if (empty($_SESSION['usuario']) || empty($_SESSION['user_id'])) {
-    header("Location: ../public/login.php");
-    exit;
-}
-
-$usuario_id = $_SESSION['user_id'];
+$is_logged_in = !empty($_SESSION['usuario']) && !empty($_SESSION['user_id']);
+$usuario_id = $is_logged_in ? $_SESSION['user_id'] : 0;
+$nombre_usuario = $is_logged_in ? $_SESSION['usuario'] : 'INVITADO';
 
 // Obtener parámetros de búsqueda y filtros
 $busqueda = isset($_GET['busqueda']) ? trim($_GET['busqueda']) : '';
 $categoria_id = isset($_GET['categoria']) ? $_GET['categoria'] : '';
 $orden = isset($_GET['orden']) ? $_GET['orden'] : 'recientes';
 
-
 // Obtener todas las categorías para el select
 $stmt_cats = $conn->query("SELECT id, nombre FROM categorias ORDER BY nombre");
 $categorias = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
 
+// --- CONFIGURACIÓN DE PAGINACIÓN ---
+$limite = 10;
+$pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+if ($pagina_actual < 1) $pagina_actual = 1;
+$offset = ($pagina_actual - 1) * $limite;
 
-// Consulta Mangas de otros usuarios
+// Consulta base para contar el total (sin LIMIT/OFFSET)
+$query_count = "
+    SELECT COUNT(DISTINCT m.id)
+    FROM mangas_compartidos mc
+    JOIN mangas m ON mc.manga_id = m.id
+    JOIN usuarios u ON m.usuario_id = u.id
+    WHERE mc.activo = 1 " . ($is_logged_in ? "AND m.usuario_id != ?" : "") . "
+";
+
+$params_count = $is_logged_in ? [$usuario_id] : [];
+
+if (!empty($busqueda)) {
+    $query_count .= " AND (m.titulo LIKE ? OR u.usuario LIKE ?)";
+    $params_count[] = "%" . $busqueda . "%";
+    $params_count[] = "%" . $busqueda . "%";
+}
+
+if (!empty($categoria_id)) {
+    $query_count .= " AND m.categoria_id = ?";
+    $params_count[] = $categoria_id;
+}
+
+$stmt_count = $conn->prepare($query_count);
+$stmt_count->execute($params_count);
+$total_mangas = $stmt_count->fetchColumn();
+$total_paginas = ceil($total_mangas / $limite);
+
+// Consulta principal con LIMIT y OFFSET
 $query = "
     SELECT m.id, m.titulo, m.descripcion, m.portada, m.fecha_subida, m.categoria_id, m.es_original, u.usuario as autor,
            COUNT(c.id) as total_capitulos, mc.fecha_comparticion
@@ -29,10 +56,10 @@ $query = "
     JOIN mangas m ON mc.manga_id = m.id
     JOIN usuarios u ON m.usuario_id = u.id
     LEFT JOIN capitulos c ON m.id = c.manga_id
-    WHERE mc.activo = 1 AND m.usuario_id != ?
+    WHERE mc.activo = 1 " . ($is_logged_in ? "AND m.usuario_id != ?" : "") . "
 ";
 
-$params = [$usuario_id];
+$params = $is_logged_in ? [$usuario_id] : [];
 
 if (!empty($busqueda)) {
     $query .= " AND (m.titulo LIKE ? OR u.usuario LIKE ?)";
@@ -55,6 +82,9 @@ if ($orden === 'antiguos') {
 } else {
     $query .= " ORDER BY mc.fecha_comparticion DESC";
 }
+
+// Añadir límites para paginación
+$query .= " LIMIT $limite OFFSET $offset";
 
 $stmt = $conn->prepare($query);
 $stmt->execute($params);
@@ -99,13 +129,22 @@ $mangas_compartidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div id="sakura-container" class="fixed inset-0 pointer-events-none z-0"></div>
 
     <header class="bg-white border-b-4 border-black p-4 relative z-50 text-black">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="manga-font text-4xl italic transform -rotate-1">
-                MANGA<span class="text-blue-500">_</span>VERSO
-            </h1>
-            <div class="flex items-center gap-4">
-                <span class="hidden md:block font-black text-sm uppercase">Bienvenido, <?= htmlspecialchars($_SESSION['usuario']); ?></span>
-                <a href="perfil.php" class="bg-yellow-400 p-2 border-2 border-black shadow-[3px_3px_0px_#000] hover:shadow-none transition-all">👤</a>
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <a href="../public/index.php" class="text-center sm:text-left">
+                <h1 class="manga-font text-4xl italic transform -rotate-1">
+                    MANGA<span class="text-blue-500">_</span>VERSO
+                </h1>
+            </a>
+            <div class="flex items-center gap-4 justify-center">
+                <a href="blog.php" class="font-black text-sm uppercase hover:text-pink-500 transition-colors">Blog</a>
+                <?php if ($is_logged_in): ?>
+                    <span class="hidden md:block font-black text-sm uppercase">Bienvenido, <?= htmlspecialchars($nombre_usuario); ?></span>
+                    <a href="perfil.php" class="bg-yellow-400 p-2 border-2 border-black shadow-[3px_3px_0px_#000] hover:shadow-none transition-all">👤</a>
+                <?php else: ?>
+                    <a href="../public/login.php?redirect=../pages/mangas_compartidos.php" class="bg-blue-600 text-white font-black text-xs px-6 py-2 border-2 border-black shadow-[3px_3px_0px_#f472b6] hover:shadow-none transition-all">
+                        INICIAR SESIÓN
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </header>
@@ -179,6 +218,40 @@ $mangas_compartidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 <?php endforeach; ?>
             </div>
+
+            <!-- Controles de Paginación -->
+            <?php if ($total_paginas > 1): ?>
+                <div class="mt-16 flex flex-wrap justify-center gap-3">
+                    <?php 
+                    // Construir URL base manteniendo filtros
+                    $url_pagi = "mangas_compartidos.php?busqueda=" . urlencode($busqueda) . "&categoria=$categoria_id&orden=$orden";
+                    ?>
+
+                    <?php if ($pagina_actual > 1): ?>
+                        <a href="<?= $url_pagi ?>&pagina=<?= $pagina_actual - 1 ?>" 
+                           class="bg-white text-black px-6 py-2 border-4 border-black font-black uppercase text-xs shadow-[4px_4px_0px_#3b82f6] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                           « Anterior
+                        </a>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+                        <a href="<?= $url_pagi ?>&pagina=<?= $i ?>" 
+                           class="px-4 py-2 border-4 border-black font-black text-xs transition-all <?= ($i == $pagina_actual) ? 'bg-pink-500 text-white shadow-[4px_4px_0px_#000]' : 'bg-white text-black hover:bg-yellow-50 shadow-[4px_4px_0px_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1' ?>">
+                           <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+
+                    <?php if ($pagina_actual < $total_paginas): ?>
+                        <a href="<?= $url_pagi ?>&pagina=<?= $pagina_actual + 1 ?>" 
+                           class="bg-blue-500 text-white px-6 py-2 border-4 border-black font-black uppercase text-xs shadow-[4px_4px_0px_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                           Siguiente »
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <p class="text-center text-[10px] text-blue-400 font-black uppercase tracking-widest mt-6">
+                    PÁGINA <?= $pagina_actual ?> DE <?= $total_paginas ?> (TOTAL: <?= $total_mangas ?> MANGAS)
+                </p>
+            <?php endif; ?>
         <?php else: ?>
             <div class="manga-panel bg-white border-4 border-black p-12 text-center text-black shadow-[10px_10px_0px_#3b82f6]">
                 <p class="manga-font text-4xl mb-4">¡Vaya! No hay nada aquí.</p>

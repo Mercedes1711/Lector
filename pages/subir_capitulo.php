@@ -1,5 +1,14 @@
 <?php
+ob_start();
 session_start();
+
+// Si es un POST pero $_POST está vacío, probablemente excedió post_max_size
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && $_SERVER['CONTENT_LENGTH'] > 0) {
+    $_SESSION['error'] = "El archivo es demasiado grande para el servidor. Intenta con uno más pequeño o contacta al administrador.";
+    header("Location: " . ($_SERVER['HTTP_REFERER'] ?? "biblioteca.php"));
+    exit;
+}
+
 require __DIR__ . "/../src/conexion_bd.php";
 
 // Verificar sesión
@@ -12,7 +21,8 @@ $usuario_id = $_SESSION['user_id'];
 
 // Solo permitir POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    die("Formulario no enviado. Ve a <a href='../public/index.php'>inicio</a>");
+    header("Location: ../public/index.php");
+    exit;
 }
 
 // Recoger datos

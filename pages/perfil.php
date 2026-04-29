@@ -99,17 +99,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_password'])) 
     $confirm_password = $_POST['confirm_password'] ?? '';
 
     try {
-        $stmt = $conn->prepare('SELECT contraseña FROM usuarios WHERE id = ?');
+        $stmt = $conn->prepare('SELECT password FROM usuarios WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
         $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$user_data || !password_verify($current_password, $user_data['contraseña'])) {
+        if (!$user_data || !password_verify($current_password, $user_data['password'])) {
             $error = "La contraseña actual es incorrecta.";
         } elseif ($new_password !== $confirm_password) {
             $error = "Las contraseñas no coinciden.";
         } else {
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare('UPDATE usuarios SET contraseña = ? WHERE id = ?');
+            $stmt = $conn->prepare('UPDATE usuarios SET password = ? WHERE id = ?');
             $stmt->execute([$hashed_password, $_SESSION['user_id']]);
             $success = "¡Contraseña reforzada!";
         }
@@ -157,8 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_password'])) 
     <div id="sakura-container" class="fixed inset-0 pointer-events-none z-0"></div>
 
     <header class="bg-white border-b-4 border-black p-4 relative z-10 text-black">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="manga-font text-4xl italic transform -rotate-1">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="manga-font text-4xl italic transform -rotate-1 text-center sm:text-left">
                 MANGA<span class="text-blue-500">_</span>VERSO
             </h1>
             <div class="flex gap-4">

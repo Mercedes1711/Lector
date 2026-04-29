@@ -42,14 +42,13 @@ $mangas_subidos = $stmt_subidas->fetchAll(PDO::FETCH_ASSOC);
 // --- OBTENCIÓN DE MANGAS DE MI COLECCIÓN ---
 $stmt_coleccion = $conn->prepare("
     SELECT m.id, m.titulo, m.descripcion, m.portada, m.fecha_subida, m.categoria_id, m.es_original, u.usuario as autor,
-           COUNT(c.id) as total_capitulos, bu.fecha_agregado, cat.nombre as categoria_nombre
+           (SELECT COUNT(*) FROM capitulos WHERE manga_id = m.id) as total_capitulos, 
+           bu.fecha_agregado, cat.nombre as categoria_nombre
     FROM biblioteca_usuario bu
     JOIN mangas m ON bu.manga_id = m.id
     JOIN usuarios u ON m.usuario_id = u.id
-    LEFT JOIN capitulos c ON m.id = c.manga_id
     LEFT JOIN categorias cat ON m.categoria_id = cat.id
     WHERE bu.usuario_id = ?
-    GROUP BY m.id
     ORDER BY bu.fecha_agregado DESC
 ");
 $stmt_coleccion->execute([$usuario_id]);
@@ -98,12 +97,13 @@ $active_tab = $_GET['tab'] ?? 'mis-mangas';
 <div id="sakura-container"></div>
 
 <header class="border-b-4 border-pink-500 bg-slate-900/80 backdrop-blur-md p-6 shadow-2xl">
-    <div class="container mx-auto flex justify-between items-center">
+    <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-6 text-center sm:text-left">
         <div>
             <h1 class="manga-font text-5xl italic">Manga_verso</h1>
             <p class="text-pink-500 font-black text-xs tracking-[0.3em]">BIBLIOTECA DEL GUERRERO</p>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex flex-wrap justify-center items-center gap-4">
+            <a href="blog.php" class="manga-font text-xl text-pink-500 hover:text-white transition-colors">BLOG</a>
             <span class="manga-font text-xl text-blue-400">HOLA, <?= htmlspecialchars($_SESSION['usuario']) ?></span>
             <a href="../public/logout.php" class="bg-pink-600 hover:bg-blue-600 text-white font-black text-xs px-4 py-2 skew-x-[-12deg] transition-all">
                 CERRAR SESIÓN

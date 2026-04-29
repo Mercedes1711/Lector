@@ -266,6 +266,17 @@ if (!$manga) {
             <div class="bg-purple-600 text-white font-bold text-[10px] inline-block px-4 py-2 tracking-[0.3em] uppercase border-2 border-black shadow-[4px_4px_0px_#000]">
                 章 • CAPÍTULOS
             </div>
+
+            <?php if ($manga['es_original']): ?>
+                <div class="mt-6">
+                    <a href="gestionar_compartir.php?manga=<?= $manga_id; ?>" class="group relative inline-block transition-transform hover:scale-105">
+                        <div class="absolute inset-0 bg-green-500 translate-x-1 translate-y-1"></div>
+                        <div class="relative bg-white border-2 border-black px-8 py-3 text-black font-black text-sm uppercase italic flex items-center gap-2">
+                            <span>📢</span> GESTIONAR COMPARTICIÓN
+                        </div>
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- Mensaje de Error -->
@@ -315,20 +326,33 @@ if (!$manga) {
                 <h3 class="manga-font text-4xl text-white italic">CAPÍTULOS EXISTENTES</h3>
             </div>
 
-            <!-- Formulario de búsqueda -->
-            <form method="GET" action="" class="mb-8">
+            <!-- Formulario de búsqueda y filtros -->
+            <form method="GET" action="" class="mb-8 bg-slate-900/50 p-6 border-l-4 border-purple-500">
                 <input type="hidden" name="manga" value="<?= $manga_id; ?>">
-                <div class="flex gap-3">
-                    <input type="text" 
-                           name="buscar" 
-                           placeholder="Buscar capítulo por título..." 
-                           value="<?= htmlspecialchars($_GET['buscar'] ?? ''); ?>" 
-                           class="manga-input flex-1 p-3 text-slate-900 font-semibold">
-                    <button type="submit" class="btn-primary px-6 py-3 text-white font-black text-sm">
-                        🔍 BUSCAR
+                <div class="flex flex-wrap gap-4 items-end">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-[10px] font-black text-purple-600 uppercase mb-2 tracking-widest">Buscar por título:</label>
+                        <input type="text" 
+                               name="buscar" 
+                               placeholder="Ej: El despertar..." 
+                               value="<?= htmlspecialchars($_GET['buscar'] ?? ''); ?>" 
+                               class="manga-input w-full p-3 text-slate-900 font-semibold">
+                    </div>
+                    
+                    <div class="min-w-[150px]">
+                        <label class="block text-[10px] font-black text-purple-600 uppercase mb-2 tracking-widest">Ordenar por:</label>
+                        <select name="orden" class="manga-input w-full p-3 text-slate-900 font-semibold bg-white cursor-pointer">
+                            <option value="ASC" <?= (isset($_GET['orden']) && $_GET['orden'] == 'ASC') ? 'selected' : ''; ?>>📅 ANTIGUOS PRIMERO</option>
+                            <option value="DESC" <?= (isset($_GET['orden']) && $_GET['orden'] == 'DESC') ? 'selected' : ''; ?>>🆕 RECIENTES PRIMERO</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary px-8 py-3 text-white font-black text-sm">
+                        FILTRAR
                     </button>
-                    <?php if (!empty($_GET['buscar'])): ?>
-                        <a href="capitulos.php?manga=<?= $manga_id; ?>" class="btn-manga px-6 py-3 text-white font-black text-sm">
+                    
+                    <?php if (!empty($_GET['buscar']) || (isset($_GET['orden']) && $_GET['orden'] !== 'ASC')): ?>
+                        <a href="capitulos.php?manga=<?= $manga_id; ?>" class="btn-manga px-6 py-3 text-white font-black text-xs">
                             ✕ LIMPIAR
                         </a>
                     <?php endif; ?>
@@ -338,19 +362,35 @@ if (!$manga) {
             <!-- Lista de Capítulos -->
             <div class="space-y-4">
                 <?php
-                $query = "SELECT * FROM capitulos WHERE manga_id = ?";
-                $params = [$manga_id];
+                // --- CONFIGURACIÓN DE PAGINACIÓN ---
+                $limite = 5;
+                $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+                if ($pagina_actual < 1) $pagina_actual = 1;
+                $offset = ($pagina_actual - 1) * $limite;
 
-                // Si hay búsqueda, añadir filtro
+                // --- DETERMINAR FILTROS ---
+                $where_base = "WHERE manga_id = ?";
+                $params_base = [$manga_id];
+
                 if (!empty($_GET['buscar'])) {
-                    $query .= " AND titulo LIKE ?";
-                    $params[] = "%" . trim($_GET['buscar']) . "%";
+                    $where_base .= " AND titulo LIKE ?";
+                    $params_base[] = "%" . trim($_GET['buscar']) . "%";
                 }
 
-                $query .= " ORDER BY fecha_subida ASC";
+                // --- DETERMINAR ORDENAMIENTO ---
+                $orden = (isset($_GET['orden']) && $_GET['orden'] == 'DESC') ? 'DESC' : 'ASC';
+
+                // --- CONTAR TOTAL PARA PAGINACIÓN ---
+                $stmt_count = $conn->prepare("SELECT COUNT(*) FROM capitulos $where_base");
+                $stmt_count->execute($params_base);
+                $total_capitulos = $stmt_count->fetchColumn();
+                $total_paginas = ceil($total_capitulos / $limite);
+
+                // --- OBTENER CAPÍTULOS PAGINADOS ---
+                $query = "SELECT * FROM capitulos $where_base ORDER BY fecha_subida $orden LIMIT $limite OFFSET $offset";
 
                 $stmt = $conn->prepare($query);
-                $stmt->execute($params);
+                $stmt->execute($params_base);
                 $capitulos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 if ($capitulos) {
@@ -388,6 +428,46 @@ if (!$manga) {
                 }
                 ?>
             </div>
+
+            <!-- Controles de Paginación -->
+            <?php if ($total_paginas > 1): ?>
+                <div class="mt-10 flex flex-wrap justify-center gap-2">
+                    <?php 
+                    // Mantener parámetros en los enlaces de paginación
+                    $url_base = "capitulos.php?manga=$manga_id";
+                    if (!empty($_GET['buscar'])) {
+                        $url_base .= "&buscar=" . urlencode($_GET['buscar']);
+                    }
+                    if (isset($_GET['orden'])) {
+                        $url_base .= "&orden=" . urlencode($_GET['orden']);
+                    }
+                    ?>
+
+                    <?php if ($pagina_actual > 1): ?>
+                        <a href="<?= $url_base ?>&pagina=<?= $pagina_actual - 1 ?>" 
+                           class="btn-manga px-4 py-2 text-white text-xs">
+                           « ANTERIOR
+                        </a>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+                        <a href="<?= $url_base ?>&pagina=<?= $i ?>" 
+                           class="px-4 py-2 border-2 border-black font-black text-xs transition-all <?= ($i == $pagina_actual) ? 'bg-purple-600 text-white shadow-[3px_3px_0px_#000]' : 'bg-white text-slate-900 hover:bg-slate-100 shadow-[2px_2px_0px_#000]' ?>">
+                           <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+
+                    <?php if ($pagina_actual < $total_paginas): ?>
+                        <a href="<?= $url_base ?>&pagina=<?= $pagina_actual + 1 ?>" 
+                           class="btn-manga px-4 py-2 text-white text-xs">
+                           SIGUIENTE »
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <p class="text-center text-[10px] text-purple-400 font-black uppercase tracking-widest mt-4">
+                    PÁGINA <?= $pagina_actual ?> DE <?= $total_paginas ?> (TOTAL: <?= $total_capitulos ?> CAPÍTULOS)
+                </p>
+            <?php endif; ?>
 
             <!-- Botón Volver -->
             <div class="mt-12 text-center">

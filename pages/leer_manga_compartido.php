@@ -2,13 +2,9 @@
 session_start();
 require __DIR__ . "/../src/conexion_bd.php";
 
-// Verificar sesión
-if (empty($_SESSION['usuario']) || empty($_SESSION['user_id'])) {
-    header("Location: ../public/login.php");
-    exit;
-}
-
-$usuario_id = $_SESSION['user_id'];
+$is_logged_in = !empty($_SESSION['usuario']) && !empty($_SESSION['user_id']);
+$usuario_id = $is_logged_in ? $_SESSION['user_id'] : 0;
+$nombre_usuario = $is_logged_in ? $_SESSION['usuario'] : 'INVITADO';
 
 // Validar que venga el ID del manga
 if (empty($_GET['manga']) || !is_numeric($_GET['manga'])) {
@@ -22,9 +18,10 @@ $stmt = $conn->prepare("
     FROM mangas m
     JOIN usuarios u ON m.usuario_id = u.id
     JOIN mangas_compartidos mc ON m.id = mc.manga_id
-    WHERE m.id = ? AND mc.activo = 1 AND m.usuario_id != ?
+    WHERE m.id = ? AND mc.activo = 1 " . ($is_logged_in ? "AND m.usuario_id != ?" : "") . "
 ");
-$stmt->execute([$manga_id, $usuario_id]);
+$exec_params = $is_logged_in ? [$manga_id, $usuario_id] : [$manga_id];
+$stmt->execute($exec_params);
 $manga = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$manga) {
@@ -246,12 +243,18 @@ $en_biblioteca = $stmt_biblioteca->fetch(PDO::FETCH_ASSOC);
 
                 <!-- Usuario y Logout -->
                 <div class="flex items-center gap-3">
-                    <a href="perfil.php" class="user-badge px-4 py-2 text-white font-black text-sm uppercase">
-                        👤 <?= htmlspecialchars($_SESSION['usuario']); ?>
-                    </a>
-                    <a href="../public/logout.php" class="logout-btn px-4 py-2 text-white font-black text-sm uppercase">
-                        ✕ SALIR
-                    </a>
+                    <?php if ($is_logged_in): ?>
+                        <a href="perfil.php" class="user-badge px-4 py-2 text-white font-black text-sm uppercase">
+                            👤 <?= htmlspecialchars($nombre_usuario); ?>
+                        </a>
+                        <a href="../public/logout.php" class="logout-btn px-4 py-2 text-white font-black text-sm uppercase">
+                            ✕ SALIR
+                        </a>
+                    <?php else: ?>
+                        <a href="../public/login.php?redirect=../pages/leer_manga_compartido.php?manga=<?= $manga_id ?>" class="bg-blue-600 border-2 border-black shadow-[3px_3px_0px_#f472b6] px-6 py-2 text-white font-black text-xs uppercase hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                            INICIAR SESIÓN
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -313,21 +316,27 @@ $en_biblioteca = $stmt_biblioteca->fetch(PDO::FETCH_ASSOC);
                     </div>
 
                     <!-- Botón Biblioteca -->
-                    <form action="procesar_biblioteca.php" method="POST">
-                        <input type="hidden" name="manga_id" value="<?= $manga_id; ?>">
-                        <input type="hidden" name="referer" value="leer_manga_compartido.php">
-                        <?php if ($en_biblioteca): ?>
-                            <input type="hidden" name="accion" value="eliminar">
-                            <button type="submit" class="btn-danger w-full text-sm">
-                                📚 Eliminar de mi Biblioteca
-                            </button>
-                        <?php else: ?>
-                            <input type="hidden" name="accion" value="agregar">
-                            <button type="submit" class="btn-primary w-full text-sm">
-                                📚 Agregar a mi Biblioteca
-                            </button>
-                        <?php endif; ?>
-                    </form>
+                    <?php if ($is_logged_in): ?>
+                        <form action="procesar_biblioteca.php" method="POST">
+                            <input type="hidden" name="manga_id" value="<?= $manga_id; ?>">
+                            <input type="hidden" name="referer" value="leer_manga_compartido.php">
+                            <?php if ($en_biblioteca): ?>
+                                <input type="hidden" name="accion" value="eliminar">
+                                <button type="submit" class="btn-danger w-full text-sm">
+                                    📚 Eliminar de mi Biblioteca
+                                </button>
+                            <?php else: ?>
+                                <input type="hidden" name="accion" value="agregar">
+                                <button type="submit" class="btn-primary w-full text-sm">
+                                    📚 Agregar a mi Biblioteca
+                                </button>
+                            <?php endif; ?>
+                        </form>
+                    <?php else: ?>
+                        <a href="../public/login.php?redirect=../pages/leer_manga_compartido.php?manga=<?= $manga_id ?>" class="btn-primary w-full text-sm text-center">
+                            📚 Inicia sesión para guardar
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

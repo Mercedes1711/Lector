@@ -218,20 +218,46 @@ $all_capitulos = $stmt_all->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: 4px 4px 0px #f472b6;
         }
 
-        /* Contenedor del PDF */
-        .pdf-container {
-            background: white;
+        /* Contenedor del Lector */
+        .reader-container {
+            background: #111827;
             border: 4px solid #000;
             box-shadow: 8px 8px 0px #000;
-            min-height: 80vh;
+            padding: 20px;
         }
 
-        .pdf-container embed {
+        .manga-page {
+            max-width: 800px;
             width: 100%;
-            height: 80vh;
-            border: none;
+            height: auto;
+            margin: 0 auto 30px auto;
+            display: block;
+            border: 4px solid #000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+            background: #000;
+            transition: transform 0.3s ease;
+        }
+
+        .manga-page:hover {
+            transform: scale(1.01);
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #f472b6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
+    <!-- pdf.js desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -310,9 +336,42 @@ $all_capitulos = $stmt_all->fetchAll(PDO::FETCH_ASSOC);
             <?php endif; ?>
         </div>
 
-        <!-- Visor de PDF -->
-        <div class="pdf-container mb-8">
-            <embed src="../<?= htmlspecialchars($capitulo['archivo']); ?>" type="application/pdf">
+        <!-- Selector de Modo de Vista y Navegación Interna -->
+        <div id="reader-top" class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-slate-900/80 p-6 border-b-4 border-blue-500">
+            <div class="flex items-center gap-4">
+                <label class="text-[10px] font-black text-pink-500 uppercase tracking-widest leading-none">Ver:</label>
+                <select id="batchSize" onchange="changeBatchSize(this.value)" class="manga-select py-1 px-4 text-xs">
+                    <option value="5">5 PÁGINAS</option>
+                    <option value="10">10 PÁGINAS</option>
+                </select>
+            </div>
+            
+            <div id="pageControls" class="flex items-center gap-4 hidden">
+                <button onclick="prevBatch()" class="btn-manga py-2 px-4 text-[10px]">« Anterior Lote</button>
+                <div class="text-center">
+                    <span id="pageRange" class="font-black text-xs text-white">Cargando...</span>
+                </div>
+                <button onclick="nextBatch()" class="btn-manga py-2 px-4 text-[10px]">Siguiente Lote »</button>
+            </div>
+        </div>
+
+        <!-- Lector Dinámico -->
+        <div id="reader" class="reader-container mb-12 max-w-5xl mx-auto">
+            <div id="loader" class="flex flex-col items-center justify-center py-20">
+                <div class="loading-spinner mb-4"></div>
+                <p class="manga-font text-2xl text-blue-400 italic">CARGANDO RECURSOS NINJA...</p>
+            </div>
+            
+            <div id="pages-container"></div>
+
+            <!-- Navegación Inferior -->
+            <div id="bottomControls" class="flex flex-col items-center gap-4 mt-12 pt-8 border-t-2 border-slate-800 hidden">
+                <div class="flex items-center gap-6">
+                    <button onclick="prevBatch()" class="btn-manga py-3 px-8 text-xs">« Anterior Lote</button>
+                    <button onclick="nextBatch()" class="btn-primary py-3 px-8 text-xs">Siguiente Lote »</button>
+                </div>
+                <p id="bottomPageRange" class="font-black text-[10px] text-pink-500 uppercase tracking-widest mt-2"></p>
+            </div>
         </div>
 
         <!-- Navegación de Capítulos (Abajo) -->
@@ -357,6 +416,100 @@ $all_capitulos = $stmt_all->fetchAll(PDO::FETCH_ASSOC);
     </footer>
 
     <script>
+        // CONFIGURACIÓN DE PDF.JS
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const pdfUrl = '../<?= htmlspecialchars($capitulo['archivo']); ?>';
+        let pdfDoc = null;
+        let currentStartPage = 1;
+        let currentBatchSize = 5;
+        let totalPages = 0;
+
+        const container = document.getElementById('pages-container');
+        const loader = document.getElementById('loader');
+        const rangeText = id('pageRange');
+        const bottomRangeText = id('bottomPageRange');
+        const controls = id('pageControls');
+        const bottomControls = id('bottomControls');
+
+        function id(name) { return document.getElementById(name); }
+
+        // Cargar documento
+        async function loadPdf() {
+            try {
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                pdfDoc = await loadingTask.promise;
+                totalPages = pdfDoc.numPages;
+                controls.classList.remove('hidden');
+                bottomControls.classList.remove('hidden');
+                renderBatch();
+            } catch (error) {
+                console.error("Error cargando PDF:", error);
+                loader.innerHTML = '<p class="text-red-500 font-bold">Error al cargar el archivo. ¿Es un PDF válido?</p>';
+            }
+        }
+
+        // Renderizar un lote de páginas
+        async function renderBatch() {
+            loader.classList.remove('hidden');
+            container.innerHTML = '';
+            
+            const endPage = Math.min(currentStartPage + currentBatchSize - 1, totalPages);
+            const rangeMsg = `MOSTRANDO PÁGINAS ${currentStartPage} - ${endPage} DE ${totalPages}`;
+            rangeText.textContent = rangeMsg;
+            bottomRangeText.textContent = rangeMsg;
+
+            for (let i = currentStartPage; i <= endPage; i++) {
+                await renderPage(i);
+            }
+            
+            loader.classList.add('hidden');
+            // Salto directo al control de navegación para empezar a leer inmediatamente
+            const targetTop = id('reader-top').offsetTop - 30;
+            window.scrollTo({ top: targetTop, behavior: 'auto' });
+        }
+
+        // Renderizar una página individual en un canvas
+        async function renderPage(num) {
+            const page = await pdfDoc.getPage(num);
+            const scale = 2.0; // Alta calidad
+            const viewport = page.getViewport({ scale });
+
+            const canvas = document.createElement('canvas');
+            canvas.className = 'manga-page';
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            await page.render(renderContext).promise;
+            container.appendChild(canvas);
+        }
+
+        function nextBatch() {
+            if (currentStartPage + currentBatchSize <= totalPages) {
+                currentStartPage += currentBatchSize;
+                renderBatch();
+            }
+        }
+
+        function prevBatch() {
+            if (currentStartPage - currentBatchSize >= 1) {
+                currentStartPage -= currentBatchSize;
+                renderBatch();
+            }
+        }
+
+        function changeBatchSize(val) {
+            currentBatchSize = parseInt(val);
+            currentStartPage = 1; // Reiniciar al cambiar el tamaño
+            renderBatch();
+        }
+
         function createSakura() {
             const container = document.getElementById('sakura-container');
             if (!container) return;
@@ -380,7 +533,11 @@ $all_capitulos = $stmt_all->fetchAll(PDO::FETCH_ASSOC);
                 container.appendChild(petal);
             }
         }
-        window.onload = createSakura;
+
+        window.onload = function() {
+            createSakura();
+            loadPdf();
+        };
     </script>
 </body>
 </html>
