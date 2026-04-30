@@ -38,8 +38,8 @@ try {
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 } catch (PDOException $e) {
-    // Error genérico para producción (evita revelar detalles técnicos)
-    die("Error de conexión al servidor del Manga_verso. Por favor, inténtalo más tarde.");
+    // Error para depuración (En producción deberías volver a un mensaje genérico)
+    die("Error de conexión al servidor del Manga_verso: " . $e->getMessage());
 }
 
 
